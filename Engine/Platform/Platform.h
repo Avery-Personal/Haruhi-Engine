@@ -88,11 +88,11 @@
         uint64_t TotalRAMBytes;
         uint64_t AvailableRAMBytes;
 
-        struct ExtraRAMInformation {
+        struct {
             const char *RAMVersion;
 
             uint32_t RAMSpeed;
-        };
+        } ExtraRAMInformation;
     } HaruPlatformRAMInformation;
 
     typedef struct {
