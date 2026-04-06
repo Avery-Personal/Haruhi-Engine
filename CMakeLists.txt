@@ -5,10 +5,12 @@ project(HaruhiEngine)
 set(CMAKE_C_STANDARD 23)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 
+find_package(glfw3 REQUIRED)
+find_package(SDL3 REQUIRED)
+
 include_directories(
     ${CMAKE_SOURCE_DIR}
     ${CMAKE_SOURCE_DIR}/engine
-    ${CMAKE_SOURCE_DIR}/drivers
 )
 
 file(GLOB_RECURSE ENGINE_SOURCES CONFIGURE_DEPENDS
@@ -21,6 +23,12 @@ add_library(HaruhiEngine STATIC
 
 add_executable(Haruhi
     Engine/Haruhi.c
+)
+
+target_link_libraries(HaruhiEngine
+    PUBLIC
+    glfw
+    SDL3::SDL3
 )
 
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
