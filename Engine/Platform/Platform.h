@@ -1,8 +1,8 @@
 //
 //  Haruhi Engine
 //
-//  Original source code derived from Harunamo Engine:
-//    Copyright © 2026 Harunamo Entertainment. All rights reserved.
+//  Original source code derived from Kunamo Engine:
+//    Copyright © 2026 Kunamo Entertainment. All rights reserved.
 //
 //  Modifications & Integration:
 //    Copyright © 2026 AveriC & Averi
