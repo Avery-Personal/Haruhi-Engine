@@ -11,9 +11,9 @@
 #include "Platform.h"
 
 #ifdef _WIN32
-    #include "OS/Windows/PlatformWin.c"
+    #include "OperatingSystem/Windows/PlatformWin.c"
 #elifdef __APPLE__
-    #include "OS/MacOS/PlatformMacOS.c"
+    #include "OperatingSystem/MacOS/PlatformMacOS.c"
 #else
-    #include "OS/Linux/PlatformLinux.c"
+    #include "OperatingSystem/Linux/PlatformLinux.c"
 #endif
