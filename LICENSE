@@ -826,6 +826,14 @@ THIRD-PARTY NOTICES.
 
 The usage of software, "Furi", indirectly includes software, "Vulkan", "OpenGL", "Metal", & "DirectX12".
 
+SOURCE ORIGINS AND DERIVATION NOTICE.
+
+Portions, sectors, & files of the software source code, "Haruhi Engine", are derived from the proprietary software, "Kunamo Engine", owned, developed, & maintained by Kunamo Entertainment, a subsidary of AveriC.
+
+These sectors, portions, & files have been modified, refined, & adapted for inclusion & usage in Haruhi Engine with authorization from copyright holders.
+
+Unless otherwised EXPLICITLY stated, all original & modified code within this software source code, alongside repository of source code is owned by AveriC & Averi, governed by the licensing term(s) defined in this document.
+
 ATTRIBUTION DEFINITIONS.
 
 "AveriC" refers to software, assets, or works owned or published under the AveriC entity or brand.
