@@ -822,9 +822,31 @@ You shan't use this file in the usage of the Asuka Licenses in explicit usage ou
 
 Unless to be stated or of agreement with applicable law or of agreement in explicit acceptance, the software, "JubiR", is to be distributed under the License on an "AS IS" BASIS, WITHOUT WARRANTY OR CONDITIONS OF ANY KIND; specifications of ALLPU v1.2 'AS IS' basis is stated under sector 5. Disclaimer of Warranty.
 
+---
+
+License of GLFW (GLFW Windowing Library) - ZLib
+
+Copyright 2002-2006 © Marcus Geelnard
+Copyright 2006-2019 © Camilla Löwy
+
+The software, "GLFW", is of license under the ZLib license.
+You shan't use this file in the usage of the ZLib license in explicit usage outside of compliance of the software, "GLFW"'s license. You may obtain a copy of such, license, ZLib at: https://zlib.net/zlib_license.html
+
+Unless to be stated or of agreement with applicable law or of agreement in explicit acceptance, the software, "GLFW", is to be distributed under the License on an "AS IS" BASIS, WITHOUT WARRANTY OR CONDITIONS OF ANY KIND.
+
+---
+
+License of SDL (SDL Windowing Library) - ZLib
+
+The software, "SDL", is of license under the ZLib license.
+You shan't use this file in the usage of the ZLib license in explicit usage outside of compliance of the software, "SDL"'s license. You may obtain a copy of such, license, ZLib at: https://zlib.net/zlib_license.html
+
+Unless to be stated or of agreement with applicable law or of agreement in explicit acceptance, the software, "SDL", is to be distributed under the License on an "AS IS" BASIS, WITHOUT WARRANTY OR CONDITIONS OF ANY KIND.
+
 THIRD-PARTY NOTICES.
 
-The usage of software, "Furi", indirectly includes software, "Vulkan", "OpenGL", "Metal", & "DirectX12".
+The usage of software, "Furi", indirectly includes software of the following: "Vulkan", "OpenGL", "Metal", & "DirectX12".
+The main software, "Haruhi Engine", directly includes software of the following: "GLFW" & "SDL3"
 
 SOURCE ORIGINS AND DERIVATION NOTICE.
 
