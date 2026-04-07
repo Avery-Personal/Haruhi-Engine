@@ -10,11 +10,9 @@ HaruEntry HaruMain() {
 
     Application.Name = "Haruhi Engine";
 
-    if (HaruInitializeWindowing() != HARU_RESULT_SUCCESS) {
-        fprintf(stderr, "Haruhi windowing initialization failed.\n");
-    }
-
-    HaruSetWindowBackend(HARU_WINDOW_BACKEND_GLFW);
+    //if (HaruInitializeWindowing() != HARU_RESULT_SUCCESS) {
+    //    fprintf(stderr, "Haruhi windowing initialization failed.\n");
+    //}
 
     HaruWindow *WINDOW = HaruApplicationCreateWindow(&Application, "Haruhi Engine", 800, 600);
     if (!WINDOW) {
