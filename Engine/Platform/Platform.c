@@ -12,8 +12,8 @@
 
 #ifdef _WIN32
     #include "OperatingSystem/Windows/PlatformWin.c"
-#elifdef __APPLE__
+#elif defined(__APPLE__)
     #include "OperatingSystem/MacOS/PlatformMacOS.c"
-#else
+#elif defined(__linux__)
     #include "OperatingSystem/Linux/PlatformLinux.c"
 #endif
