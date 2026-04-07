@@ -14,6 +14,8 @@ HaruEntry HaruMain() {
         fprintf(stderr, "Haruhi windowing initialization failed.\n");
     }
 
+    HaruSetWindowBackend(HARU_WINDOW_BACKEND_GLFW);
+
     HaruWindow *WINDOW = HaruApplicationCreateWindow(&Application, "Haruhi Engine", 800, 600);
     if (!WINDOW) {
         fprintf(stderr, "Couldn't create window.");
