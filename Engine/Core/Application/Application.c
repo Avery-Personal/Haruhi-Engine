@@ -1,0 +1,112 @@
+//
+//  Haruhi Engine
+// 
+//  This file is of derivation from Kunamo Engine source code & has been adapted for integration of Haruhi Engine.
+//  The following software is DIRECTLY seeded from Kunamo Engine source with minuscle adjustments to architecture, if any.
+//
+//  Portions or sectors of this file originate from Kunamo Engine source code and may include minimal modifications
+// 
+//  Original source code derived from Kunamo Engine:
+//    Copyright © 2026 Kunamo Entertainment. All rights reserved.
+//
+//  Modifications & Integration:
+//    Copyright © 2026 AveriC & Averi
+//
+
+#include <stdio.h>
+#include <stdlib.h>
+
+#include "Application.h"
+#include "../../Platform/Runtime/Window/Window.h"
+
+void HaruApplicationRun(HaruApplication *Application) {
+    while (Application -> Running && Application -> Engine.Running) {
+        //HaruInputBeginFrame(&Application -> Engine.Platform);
+
+        for (int i=0; i < Application -> WindowCount; i++) {
+            HaruWindowPollEvents(Application -> Windows[i]);
+        }
+
+        if (HaruWindowShouldClose(Application -> MainWindow)) {
+            Application -> Running = 0;
+            Application -> Engine.Running = 0;
+        }
+    }
+}
+
+HaruWindow *HaruApplicationCreateWindow(HaruApplication *Application, const char *Title, int WIDTH, int HEIGHT) {
+    if (Application -> WindowCount >= MAX_WINDOWS)
+        return NULL;
+
+    HaruWindow *Window = HaruCreateWindow(Title, WIDTH, HEIGHT);
+    if (!Window)
+        return NULL;
+
+    Window -> Application = Application;
+
+    Application -> Windows[Application -> WindowCount++] = Window;
+
+    if (!Application -> MainWindow)
+        Application -> MainWindow = Window;
+
+    return Window;
+}
+
+//HaruResult *HaruApplicationCreateInfoWindow(HaruApplication *Application, HaruWindowCreateInfo *WindowCreateInfo) {
+//    if (WindowCreateInfo -> Title == NULL || WindowCreateInfo -> WIDTH <= 100 || WindowCreateInfo -> HEIGHT <= 100)
+//        return HARU_RESULT_FAILURE;
+//    
+//    HaruWindow *WINDOW = HaruApplicationCreateWindow(Application, WindowCreateInfo -> Title, WindowCreateInfo -> WIDTH, WindowCreateInfo -> HEIGHT);
+//
+//    HARU_RESULT_SUCCESS;
+//}
+
+void HaruApplicationAddWindow(HaruApplication *Application, HaruWindow *WINDOW) {
+    Application -> Windows[Application -> WindowCount++] = WINDOW;
+}
+
+HaruApplication HaruApplicationInitialize() {
+    HaruApplication Application = {0};
+
+    Application.Name = "Kunamo Engine App";
+    Application.Version = HARU_ENGINE_VERSION;
+
+    Application.Engine = HaruEngineInitialize();
+    Application.Platform = Application.Engine.Platform;
+    
+    Application.WindowCount = 0;
+    Application.Running = HARU_TRUE;
+
+    return Application;
+}
+
+HaruResult HaruApplicationCreate(HaruApplicationCreateInfo *ApplicationCreateInfo, HaruApplication **OutputApplication) {
+    fprintf(stderr, "SOFTWARECreateInfo based creation is DEPRECATED\n");
+
+    HaruApplication *Application = malloc(sizeof(HaruApplication));
+
+    Application -> Name = ApplicationCreateInfo -> Name;
+    Application -> Version = ApplicationCreateInfo -> Version; 
+
+    Application -> Engine = HaruEngineInitialize();
+    Application -> Running = HARU_TRUE;
+
+    if (ApplicationCreateInfo -> InitialWindowTitle) {
+        //HaruWindowCreateInfo WindowInfo = {0};
+
+        //WindowInfo.Title = ApplicationCreateInfo -> InitialWindowTitle;
+
+        //WindowInfo.WIDTH = ApplicationCreateInfo -> InitialWindowWidth;
+        //WindowInfo.HEIGHT = ApplicationCreateInfo -> InitialWindowHeight;
+
+        //HaruApplicationCreateInfoWindow(Application, &WindowInfo);
+    }
+
+    *OutputApplication = Application;
+
+    return HARU_RESULT_SUCCESS;
+}
+
+void HaruApplicationShutdown(HaruApplication *Application) {
+    Application -> Running = 0;
+}
