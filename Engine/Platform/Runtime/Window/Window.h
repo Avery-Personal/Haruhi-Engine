@@ -11,7 +11,7 @@
 #ifndef PWINDOW_H
 #define PWINDOW_H
 
-    #include "../../../Core/Types.h"
+    #include "../../../Core/System.h"
 
     typedef enum {
         HARU_WINDOW_BACKEND_GLFW,
