@@ -1,0 +1,168 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+#include <GLFW/glfw3.h>
+#include <SDL3/SDL.h>
+
+#include "Window.h"
+#include "../../Platform.h"
+
+HaruWindowBackend gWindowBackend = HARU_WINDOW_BACKEND_NONE;
+
+static void HaruGLFWErrorCallback(int Code, const char *Description) {
+    fprintf(stderr, "GLFW Error (%d): %s\n", Code, Description);
+}
+
+void HaruSetWindowBackend(HaruWindowBackend BACKEND) {
+    gWindowBackend = BACKEND;
+}
+
+HaruResult HaruInitializeWindowing() {
+    if (gWindowBackend == HARU_WINDOW_BACKEND_GLFW) {
+        glfwSetErrorCallback(HaruGLFWErrorCallback);
+
+        if (!glfwInit()) {
+            fprintf(stderr, "Couldn't initialize GLFW\n");
+
+            return HARU_RESULT_ERROR;
+        }
+
+        glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+
+        return HARU_EXIT_SUCCESS;
+    } else if (gWindowBackend == HARU_WINDOW_BACKEND_SDL) {
+        if ((SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO)) == -1) {
+            fprintf(stderr, "Couldn't initialize SDL: %s.\n", SDL_GetError());
+
+            return HARU_RESULT_ERROR;
+        }
+
+        return HARU_RESULT_SUCCESS;
+    } else if (gWindowBackend == HARU_WINDOW_BACKEND_NONE) {
+        fprintf(stderr, "Haruhi windowing backend empty or not created.\n");
+        fprintf(stderr, "Rollback - Reverting windowing backend to GLFW...\n");
+
+        HaruSetWindowBackend(HARU_WINDOW_BACKEND_GLFW);
+    }
+}
+
+HaruWindow *HaruCreateWindow(const char *Title, int WIDTH, int HEIGHT) {
+    static int Initialized = 0;
+
+    HaruException Exception;
+
+    HaruWindow *WINDOW = malloc(sizeof(HaruWindow));
+    if (!WINDOW) {
+        fprintf(stderr, "Failed to allocate Haruhi Window.\n");
+
+        return NULL;
+    }
+
+    TRY(Exception) {
+        if (gWindowBackend != HARU_WINDOW_BACKEND_GLFW && gWindowBackend != HARU_WINDOW_BACKEND_SDL) {
+            fprintf(stderr, "Haruhi windowing backend empty or not created.\n");
+            fprintf(stderr, "Rollback - Reverting windowing backend to GLFW...\n");
+
+            HaruSetWindowBackend(HARU_WINDOW_BACKEND_GLFW);
+        }
+
+        if (!Initialized) {
+            if (HaruInitializeWindowing() != HARU_RESULT_SUCCESS){
+                fprintf(stderr, "Haruhi windowing initialization failed.\n");
+
+                THROW(Exception, 31);
+            }
+
+            Initialized = 1;
+        } else if (Initialized) {
+            fprintf(stderr, "Haruhi windowing ALREADY initialized, short passing...\n");
+
+            THROW(Exception, 32);
+        }
+
+        if (gWindowBackend == HARU_WINDOW_BACKEND_GLFW) {
+            GLFWwindow *GLFWHandle = glfwCreateWindow(WIDTH, HEIGHT, Title, NULL, NULL);
+            if (!GLFWHandle) {
+                fprintf(stderr, "GLFW Window creation failed.\n");
+
+                glfwTerminate();
+
+                THROW(Exception, 33);
+            }
+
+            *WINDOW = (HaruWindow){0};
+
+            WINDOW -> Handle = GLFWHandle;
+            WINDOW -> Application = NULL;
+
+            WINDOW -> WIDTH = WIDTH;
+            WINDOW -> HEIGHT = HEIGHT;
+
+            WINDOW -> ShouldClose = 0;
+
+            glfwSetWindowUserPointer(GLFWHandle, WINDOW);
+
+            return WINDOW;
+        } else if (gWindowBackend == HARU_WINDOW_BACKEND_SDL) {
+            // TODO: Create Furi to a testable state of rendering API detection
+            SDL_Window *SDLHandle = SDL_CreateWindow(Title, WIDTH, HEIGHT, SDL_WINDOW_METAL);
+            if (!SDLHandle) {
+                fprintf(stderr, "SDL Window creation failed.\n");
+                fprintf(stderr, "  - %s\n", SDL_GetError());
+
+                SDL_Quit();
+
+                THROW(Exception, 34);
+            }
+
+            *WINDOW = (HaruWindow){0};
+
+            WINDOW -> Handle = SDLHandle;
+            WINDOW -> Application = NULL;
+
+            WINDOW -> WIDTH = WIDTH;
+            WINDOW -> HEIGHT = HEIGHT;
+
+            WINDOW -> ShouldClose = 0;
+
+            return WINDOW;
+        }
+
+        THROW(Exception, 190226);
+    } CATCH(Exception) {
+        fprintf(stderr, "Haruhi Exception failed with code: %d\n", Exception.Code);
+
+        if (WINDOW)
+            free(WINDOW);
+
+        return NULL;
+    }
+}
+
+void HaruDestroyWindow(HaruWindow *WINDOW) {
+    if (gWindowBackend == HARU_WINDOW_BACKEND_GLFW) {
+        glfwDestroyWindow(WINDOW -> Handle);
+    } else if (gWindowBackend == HARU_WINDOW_BACKEND_SDL) {
+        SDL_DestroyWindow(WINDOW -> Handle);
+    }
+
+    free(WINDOW);
+}
+
+void HaruWindowPollEvents(HaruWindow *WINDOW) {
+    fprintf(stderr, "Haruhi usage of poll events contains ONLY GLFW support as of now.\n");
+
+    glfwPollEvents();
+
+    if (glfwWindowShouldClose((GLFWwindow *) WINDOW -> Handle)) {
+        WINDOW -> ShouldClose = 1;
+    }
+}
+
+void HaruPollEvents(HaruPlatform *Platform) {
+    (void) Platform;
+}
+
+int HaruWindowShouldClose(HaruWindow *WINDOW) {
+    return WINDOW -> ShouldClose;
+}
