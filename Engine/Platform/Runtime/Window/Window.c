@@ -9,6 +9,8 @@
 
 HaruWindowBackend gWindowBackend = HARU_WINDOW_BACKEND_NONE;
 
+static int WindowingInitialized = 0;
+
 static void HaruGLFWErrorCallback(int Code, const char *Description) {
     fprintf(stderr, "GLFW Error (%d): %s\n", Code, Description);
 }
@@ -29,6 +31,8 @@ HaruResult HaruInitializeWindowing() {
 
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 
+        WindowingInitialized = 1;
+
         return HARU_EXIT_SUCCESS;
     } else if (gWindowBackend == HARU_WINDOW_BACKEND_SDL) {
         if ((SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO)) == -1) {
@@ -37,18 +41,20 @@ HaruResult HaruInitializeWindowing() {
             return HARU_RESULT_ERROR;
         }
 
+        WindowingInitialized = 1;
+
         return HARU_RESULT_SUCCESS;
     } else if (gWindowBackend == HARU_WINDOW_BACKEND_NONE) {
         fprintf(stderr, "Haruhi windowing backend empty or not created.\n");
         fprintf(stderr, "Rollback - Reverting windowing backend to GLFW...\n");
 
         HaruSetWindowBackend(HARU_WINDOW_BACKEND_GLFW);
+        
+        return HaruInitializeWindowing();
     }
 }
 
 HaruWindow *HaruCreateWindow(const char *Title, int WIDTH, int HEIGHT) {
-    static int Initialized = 0;
-
     HaruException Exception;
 
     HaruWindow *WINDOW = malloc(sizeof(HaruWindow));
@@ -64,20 +70,20 @@ HaruWindow *HaruCreateWindow(const char *Title, int WIDTH, int HEIGHT) {
             fprintf(stderr, "Rollback - Reverting windowing backend to GLFW...\n");
 
             HaruSetWindowBackend(HARU_WINDOW_BACKEND_GLFW);
+
+            THROW(Exception, 31);
         }
 
-        if (!Initialized) {
+        if (!WindowingInitialized) {
             if (HaruInitializeWindowing() != HARU_RESULT_SUCCESS){
                 fprintf(stderr, "Haruhi windowing initialization failed.\n");
 
-                THROW(Exception, 31);
+                THROW(Exception, 32);
             }
 
-            Initialized = 1;
-        } else if (Initialized) {
+            WindowingInitialized = 1;
+        } else if (WindowingInitialized) {
             fprintf(stderr, "Haruhi windowing ALREADY initialized, short passing...\n");
-
-            THROW(Exception, 32);
         }
 
         if (gWindowBackend == HARU_WINDOW_BACKEND_GLFW) {
@@ -87,7 +93,7 @@ HaruWindow *HaruCreateWindow(const char *Title, int WIDTH, int HEIGHT) {
 
                 glfwTerminate();
 
-                THROW(Exception, 33);
+                THROW(Exception, 34);
             }
 
             *WINDOW = (HaruWindow){0};
@@ -112,7 +118,7 @@ HaruWindow *HaruCreateWindow(const char *Title, int WIDTH, int HEIGHT) {
 
                 SDL_Quit();
 
-                THROW(Exception, 34);
+                THROW(Exception, 35);
             }
 
             *WINDOW = (HaruWindow){0};
