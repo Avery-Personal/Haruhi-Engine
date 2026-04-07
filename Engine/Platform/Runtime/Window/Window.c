@@ -49,7 +49,7 @@ HaruResult HaruInitializeWindowing() {
         fprintf(stderr, "Rollback - Reverting windowing backend to GLFW...\n");
 
         HaruSetWindowBackend(HARU_WINDOW_BACKEND_GLFW);
-        
+
         return HaruInitializeWindowing();
     }
 }
@@ -71,7 +71,10 @@ HaruWindow *HaruCreateWindow(const char *Title, int WIDTH, int HEIGHT) {
 
             HaruSetWindowBackend(HARU_WINDOW_BACKEND_GLFW);
 
-            THROW(Exception, 31);
+            if (HARUHI_RETRY)
+                HaruCreateWindow(Title, WIDTH, HEIGHT);
+            else
+                THROW(Exception, 31);
         }
 
         if (!WindowingInitialized) {
@@ -156,7 +159,12 @@ void HaruDestroyWindow(HaruWindow *WINDOW) {
 }
 
 void HaruWindowPollEvents(HaruWindow *WINDOW) {
-    fprintf(stderr, "Haruhi usage of poll events contains ONLY GLFW support as of now.\n");
+    static int StatedDeprecation = 0;
+    if (!StatedDeprecation) {
+        fprintf(stderr, "Haruhi usage of poll events contains ONLY GLFW support as of now.\n");
+
+        StatedDeprecation = 1;
+    }
 
     glfwPollEvents();
 
