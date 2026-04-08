@@ -13,6 +13,8 @@
 
     #include "../../../Core/System.h"
 
+    #define HARUHI_RESOLVE 1
+
     typedef enum {
         HARU_WINDOW_BACKEND_GLFW,
         HARU_WINDOW_BACKEND_SDL,
