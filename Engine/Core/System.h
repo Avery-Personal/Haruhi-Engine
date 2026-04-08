@@ -14,6 +14,4 @@
     #include "Types.h"
     #include "Versioning.h"
 
-    #define HARUHI_RETRY 1
-
 #endif
