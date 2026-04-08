@@ -3,6 +3,7 @@
 
 #include <GLFW/glfw3.h>
 #include <SDL3/SDL.h>
+#include <OpenGL/OpenGL.h>
 
 #include "Window.h"
 #include "../../Platform.h"
@@ -71,7 +72,7 @@ HaruWindow *HaruCreateWindow(const char *Title, int WIDTH, int HEIGHT) {
 
             HaruSetWindowBackend(HARU_WINDOW_BACKEND_GLFW);
 
-            if (HARUHI_RETRY)
+            if (HARUHI_RESOLVE)
                 HaruCreateWindow(Title, WIDTH, HEIGHT);
             else
                 THROW(Exception, 31);
