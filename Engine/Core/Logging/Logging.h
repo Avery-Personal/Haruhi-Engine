@@ -10,6 +10,6 @@
         HA_LOGGING_FATAL
     } HaruLoggingLevel;
 
-
+    
 
 #endif
