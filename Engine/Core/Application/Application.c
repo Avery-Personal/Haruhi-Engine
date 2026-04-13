@@ -72,7 +72,7 @@ void HaruApplicationAddWindow(HaruApplication *Application, HaruWindow *WINDOW) 
 HaruApplication HaruApplicationInitialize() {
     HaruApplication Application = {0};
 
-    Application.Name = "Kunamo Engine App";
+    Application.Name = "Haruhi Engine App";
     Application.Version = HARU_ENGINE_VERSION;
 
     Application.Engine = HaruEngineInitialize();
