@@ -18,8 +18,15 @@
 
         uint8_t EnableColors;
         uint8_t EnableFile;
-        
+
         HaruLoggingLevel Level;
     } HaruLogger;
+
+    void HaruLoggerInitialize(HaruLogger *Logger);
+    
+    void HaruLoggerSetFile(HaruLogger *Logger, const char *Path);
+    void HaruLoggerSetLevel(HaruLogger *Logger, HaruLoggingLevel Level);
+
+    void HaruLog(HaruLogger *Logger, HaruLoggingLevel Level, const char *File, int Line, const char *Format, ...);
 
 #endif
