@@ -4,20 +4,28 @@
 #include "Core/Engine/Engine.h"
 #include "Core/Application/Application.h"
 #include "Platform/Runtime/Window/Window.h"
+#include "Core/Logging/Logging.h"
 
 HaruEntry HaruMain() {
+    HaruLoggerInitialize(&gLogger);
+    HaruLoggerSetLevel(&gLogger, HARU_LOGGING_INFO);
+
+    gLogger.EnableFile = 0;
+
     HaruApplication Application = HaruApplicationInitialize();
 
     Application.Name = "Haruhi Engine";
     Application.Version = HARU_ENGINE_VERSION;
 
     if (HaruInitializeWindowing() != HARU_RESULT_SUCCESS) {
-        fprintf(stderr, "Haruhi windowing initialization failed.\n");
+        HARU_LOG_FATAL(&gLogger, "Haruhi windowing initialization failed.\n");
+
+        return HARU_EXIT_FAILURE;
     }
 
     HaruWindow *WINDOW = HaruApplicationCreateWindow(&Application, "Haruhi Engine", 800, 600);
     if (!WINDOW) {
-        fprintf(stderr, "Couldn't create window.");
+        HARU_LOG_ERROR(&gLogger, "Couldn't create window.");
 
         return HARU_EXIT_FAILURE;
     }
