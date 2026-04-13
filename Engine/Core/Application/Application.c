@@ -22,7 +22,10 @@
 
 void HaruApplicationRun(HaruApplication *Application) {
     while (Application -> Running && Application -> Engine.Running) {
-        //HaruInputBeginFrame(&Application -> Engine.Platform);
+        HaruTimeUpdate(&Application -> Time);
+
+        //HaruInputBeginFrame(&Application -> Platform);
+        //HaruPlatformPollEvents(&Application -> Platform);
 
         for (int i=0; i < Application -> WindowCount; i++) {
             HaruWindowPollEvents(Application -> Windows[i]);
