@@ -1,3 +1,13 @@
+//
+//  Haruhi Engine
+//
+//  Original source code derived from Kunamo Engine:
+//    Copyright © 2026 Kunamo Entertainment. All rights reserved.
+//
+//  Modifications & Integration:
+//    Copyright © 2026 AveriC & Averi
+//
+
 #include <stdio.h>
 #include <stdlib.h>
 
