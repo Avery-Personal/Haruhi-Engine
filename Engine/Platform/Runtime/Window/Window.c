@@ -7,13 +7,14 @@
 
 #include "Window.h"
 #include "../../Platform.h"
+#include "../../../Core/Logging/Logging.h"
 
 HaruWindowBackend gWindowBackend = HARU_WINDOW_BACKEND_NONE;
 
 static int WindowingInitialized = 0;
 
 static void HaruGLFWErrorCallback(int Code, const char *Description) {
-    fprintf(stderr, "GLFW Error (%d): %s\n", Code, Description);
+    HARU_LOG_ERROR(&gLogger, "GLFW Error (%d): %s\n", Code, Description);
 }
 
 void HaruSetWindowBackend(HaruWindowBackend BACKEND) {
@@ -25,7 +26,7 @@ HaruResult HaruInitializeWindowing() {
         glfwSetErrorCallback(HaruGLFWErrorCallback);
 
         if (!glfwInit()) {
-            fprintf(stderr, "Couldn't initialize GLFW\n");
+            HARU_LOG_ERROR(&gLogger, "Couldn't initialize GLFW\n");
 
             return HARU_RESULT_ERROR;
         }
@@ -37,7 +38,7 @@ HaruResult HaruInitializeWindowing() {
         return HARU_RESULT_SUCCESS;
     } else if (gWindowBackend == HARU_WINDOW_BACKEND_SDL) {
         if ((SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO)) == -1) {
-            fprintf(stderr, "Couldn't initialize SDL: %s.\n", SDL_GetError());
+            HARU_LOG_ERROR(&gLogger, "Couldn't initialize SDL: %s.\n", SDL_GetError());
 
             return HARU_RESULT_ERROR;
         }
@@ -46,8 +47,8 @@ HaruResult HaruInitializeWindowing() {
 
         return HARU_RESULT_SUCCESS;
     } else if (gWindowBackend == HARU_WINDOW_BACKEND_NONE) {
-        fprintf(stderr, "Haruhi windowing backend empty or not created.\n");
-        fprintf(stderr, "Rollback - Reverting windowing backend to GLFW...\n");
+        HARU_LOG_WARN(&gLogger, "Haruhi windowing backend empty or not created.\n");
+        HARU_LOG_INFO(&gLogger, "Rollback - Reverting windowing backend to GLFW...\n");
 
         HaruSetWindowBackend(HARU_WINDOW_BACKEND_GLFW);
 
@@ -62,15 +63,15 @@ HaruWindow *HaruCreateWindow(const char *Title, int WIDTH, int HEIGHT) {
 
     HaruWindow *WINDOW = malloc(sizeof(HaruWindow));
     if (!WINDOW) {
-        fprintf(stderr, "Failed to allocate Haruhi Window.\n");
+        HARU_LOG_ERROR(&gLogger, "Failed to allocate Haruhi Window.\n");
 
         return NULL;
     }
 
     TRY(Exception) {
         if (gWindowBackend != HARU_WINDOW_BACKEND_GLFW && gWindowBackend != HARU_WINDOW_BACKEND_SDL) {
-            fprintf(stderr, "Haruhi windowing backend empty or not created.\n");
-            fprintf(stderr, "Rollback - Reverting windowing backend to GLFW...\n");
+            HARU_LOG_ERROR(&gLogger, "Haruhi windowing backend empty or not created.\n");
+            HARU_LOG_INFO(&gLogger, "Rollback - Reverting windowing backend to GLFW...\n");
 
             HaruSetWindowBackend(HARU_WINDOW_BACKEND_GLFW);
 
@@ -82,20 +83,20 @@ HaruWindow *HaruCreateWindow(const char *Title, int WIDTH, int HEIGHT) {
 
         if (!WindowingInitialized) {
             if (HaruInitializeWindowing() != HARU_RESULT_SUCCESS){
-                fprintf(stderr, "Haruhi windowing initialization failed.\n");
+                HARU_LOG_ERROR(&gLogger, "Haruhi windowing initialization failed.\n");
 
                 THROW(Exception, 32);
             }
 
             WindowingInitialized = 1;
         } else if (WindowingInitialized) {
-            fprintf(stderr, "Haruhi windowing ALREADY initialized, short passing...\n");
+            HARU_LOG_WARN(&gLogger, "Haruhi windowing ALREADY initialized, short passing...\n");
         }
 
         if (gWindowBackend == HARU_WINDOW_BACKEND_GLFW) {
             GLFWwindow *GLFWHandle = glfwCreateWindow(WIDTH, HEIGHT, Title, NULL, NULL);
             if (!GLFWHandle) {
-                fprintf(stderr, "GLFW Window creation failed.\n");
+                HARU_LOG_ERROR(&gLogger, "GLFW Window creation failed.\n");
 
                 glfwTerminate();
 
@@ -119,8 +120,8 @@ HaruWindow *HaruCreateWindow(const char *Title, int WIDTH, int HEIGHT) {
             // TODO: Create Furi to a testable state of rendering API detection
             SDL_Window *SDLHandle = SDL_CreateWindow(Title, WIDTH, HEIGHT, SDL_WINDOW_METAL);
             if (!SDLHandle) {
-                fprintf(stderr, "SDL Window creation failed.\n");
-                fprintf(stderr, "  - %s\n", SDL_GetError());
+                HARU_LOG_ERROR(&gLogger, "SDL Window creation failed.\n");
+                HARU_LOG_ERROR(&gLogger, "  - %s\n", SDL_GetError());
 
                 SDL_Quit();
 
@@ -142,7 +143,7 @@ HaruWindow *HaruCreateWindow(const char *Title, int WIDTH, int HEIGHT) {
 
         THROW(Exception, 190226);
     } CATCH(Exception) {
-        fprintf(stderr, "Haruhi Exception failed with code: %d\n", Exception.Code);
+        HARU_LOG_INFO(&gLogger, "Haruhi Exception failed with code: %d\n", Exception.Code);
 
         if (WINDOW)
             free(WINDOW);
@@ -164,7 +165,7 @@ void HaruDestroyWindow(HaruWindow *WINDOW) {
 void HaruWindowPollEvents(HaruWindow *WINDOW) {
     static int StatedDeprecation = 0;
     if (!StatedDeprecation) {
-        fprintf(stderr, "Haruhi usage of poll events contains ONLY GLFW support as of now.\n");
+        HARU_LOG_INFO(&gLogger, "Haruhi usage of poll events contains ONLY GLFW support as of now.\n");
 
         StatedDeprecation = 1;
     }
