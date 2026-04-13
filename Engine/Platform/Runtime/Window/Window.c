@@ -34,7 +34,7 @@ HaruResult HaruInitializeWindowing() {
 
         WindowingInitialized = 1;
 
-        return HARU_EXIT_SUCCESS;
+        return HARU_RESULT_SUCCESS;
     } else if (gWindowBackend == HARU_WINDOW_BACKEND_SDL) {
         if ((SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO)) == -1) {
             fprintf(stderr, "Couldn't initialize SDL: %s.\n", SDL_GetError());
@@ -53,6 +53,8 @@ HaruResult HaruInitializeWindowing() {
 
         return HaruInitializeWindowing();
     }
+
+    return HARU_RESULT_FAILURE;
 }
 
 HaruWindow *HaruCreateWindow(const char *Title, int WIDTH, int HEIGHT) {
