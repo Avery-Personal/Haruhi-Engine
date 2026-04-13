@@ -21,6 +21,7 @@
     #include "../Engine/Engine.h"
     #include "../../Platform/Platform.h"
     #include "../../Platform/Runtime/Window/Window.h"
+    #include "../../Platform/Runtime/Timer/Timer.h"
     #include "../System.h"
 
     #define MAX_WINDOWS 8
@@ -32,6 +33,8 @@
 
         HaruEngine Engine;
         HaruPlatform Platform;
+
+        HaruTimeContext Time;
 
         HaruWindow *Windows[MAX_WINDOWS];
         HaruWindow *MainWindow;
