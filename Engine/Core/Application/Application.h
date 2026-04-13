@@ -42,7 +42,7 @@
         int WindowCount;
 
         int Running;
-        float DeltaTime;
+        float DeltaTime; // DEPRECATED
     } HaruApplication;
 
     typedef struct {
