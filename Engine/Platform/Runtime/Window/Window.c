@@ -32,6 +32,12 @@ void HaruSetWindowBackend(HaruWindowBackend BACKEND) {
 }
 
 HaruResult HaruInitializeWindowing() {
+    if (WindowingInitialized) {
+        HARU_LOG_WARN(&gLogger, "Haruhi windowing ALREADY initialized, short passing...\n");
+
+        return HARU_RESULT_SUCCESS;
+    }
+
     if (gWindowBackend == HARU_WINDOW_BACKEND_GLFW) {
         glfwSetErrorCallback(HaruGLFWErrorCallback);
 
@@ -99,8 +105,6 @@ HaruWindow *HaruCreateWindow(const char *Title, int WIDTH, int HEIGHT) {
             }
 
             WindowingInitialized = 1;
-        } else if (WindowingInitialized) {
-            HARU_LOG_WARN(&gLogger, "Haruhi windowing ALREADY initialized, short passing...\n");
         }
 
         if (gWindowBackend == HARU_WINDOW_BACKEND_GLFW) {
