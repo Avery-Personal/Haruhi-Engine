@@ -1,3 +1,9 @@
+//
+//  Haruhi Engine
+//
+//  Copyright © 2026 AveriC & Averi
+//
+
 #include "Timer.h"
 
 #include <stdio.h>
