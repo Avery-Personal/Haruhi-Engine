@@ -37,4 +37,11 @@
 
     void HaruLog(HaruLogger *Logger, HaruLoggingLevel Level, const char *File, int Line, const char *Format, ...);
 
+    #define HARU_LOG_TRACE(logger, Format, ...) HaruLog(logger, HARU_LOGGING_TRACE, __FILE__, __LINE__, Format, ##__VA_ARGS__)
+    #define HARU_LOG_DEBUG(logger, Format, ...) HaruLog(logger, HARU_LOGGING_DEBUG, __FILE__, __LINE__, Format, ##__VA_ARGS__)
+    #define HARU_LOG_INFO(logger, Format, ...) HaruLog(logger, HARU_LOGGING_INFO, __FILE__, __LINE__, Format, ##__VA_ARGS__)
+    #define HARU_LOG_WARN(logger, Format, ...) HaruLog(logger, HARU_LOGGING_WARN, __FILE__, __LINE__, Format, ##__VA_ARGS__)
+    #define HARU_LOG_ERROR(logger, Format, ...) HaruLog(logger, HARU_LOGGING_ERROR, __FILE__, __LINE__, Format, ##__VA_ARGS__)
+    #define HARU_LOG_FATAL(logger, Format, ...) HaruLog(logger, HARU_LOGGING_FATAL, __FILE__, __LINE__, Format, ##__VA_ARGS__)
+
 #endif
