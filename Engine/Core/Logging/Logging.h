@@ -1,15 +1,15 @@
 #ifndef HARUHI_LOGGING_H
 #define HARUHI_LOGGING_H
 
-    typedef enum {
-        HA_LOGGING_TRACE,
-        HA_LOGGING_DEBUG,
-        HA_LOGGING_INFO,
-        HA_LOGGING_WARN,
-        HA_LOGGING_ERROR,
-        HA_LOGGING_FATAL
-    } HaruLoggingLevel;
+    #include <stdint.h>
 
-    
+    typedef enum {
+        HARU_LOGGING_TRACE,
+        HARU_LOGGING_DEBUG,
+        HARU_LOGGING_INFO,
+        HARU_LOGGING_WARN,
+        HARU_LOGGING_ERROR,
+        HARU_LOGGING_FATAL
+    } HaruLoggingLevel;
 
 #endif
