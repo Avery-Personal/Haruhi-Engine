@@ -4,6 +4,8 @@
 #include <string.h>
 #include <time.h>
 
+HaruLogger gLogger = {0};
+
 static const char *HaruLevelToString(HaruLoggingLevel Level) {
     switch (Level) {
         case HARU_LOGGING_TRACE: return "TRACE";
@@ -30,12 +32,12 @@ static const char *HaruLevelToColor(HaruLoggingLevel Level) {
     }
 }
 
-static void HaruGetTime(char *buffer, size_t size) {
+static void HaruGetTime(char *Buffer, size_t Size) {
     time_t Time = time(NULL);
 
     struct tm *TimeInformation = localtime(&Time);
 
-    strftime(buffer, size, "%H:%M:%S", TimeInformation);
+    strftime(Buffer, Size, "%H:%M:%S", TimeInformation);
 }
 
 void HaruLoggerInitialize(HaruLogger *Logger) {
@@ -95,10 +97,10 @@ void HaruLog(HaruLogger *Logger, HaruLoggingLevel Level, const char *File, int L
 
     va_end(Arguments);
 
-    fprintf(stdout, "%s[%s] [%s] %s (%s:%d)%s\n", Color, TimeBuffer, LevelString, Message, File, Line, HARU_COLOR_RESET);
+    fprintf(stdout, "%s[%s] Haruhi %s: %s (%s:%d)%s\n", Color, TimeBuffer, LevelString, Message, File, Line, HARU_COLOR_RESET);
 
     if (Logger -> EnableFile && Logger -> File) {
-        fprintf(Logger -> File, "[%s] [%s] %s (%s:%d)\n", TimeBuffer, LevelString, Message, File, Line);
+        fprintf(Logger -> File, "[%s] %s %s (%s:%d)\n", TimeBuffer, LevelString, Message, File, Line);
 
         fflush(Logger -> File);
     }
