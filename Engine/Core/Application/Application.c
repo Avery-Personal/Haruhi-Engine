@@ -78,6 +78,8 @@ HaruApplication HaruApplicationInitialize() {
     Application.WindowCount = 0;
     Application.Running = HARU_TRUE;
 
+    HaruTimeInitialize(&Application.Time);
+
     return Application;
 }
 
