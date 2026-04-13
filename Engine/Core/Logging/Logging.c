@@ -4,7 +4,7 @@
 #include <string.h>
 #include <time.h>
 
-static const char* HaruLevelToString(HaruLoggingLevel Level) {
+static const char *HaruLevelToString(HaruLoggingLevel Level) {
     switch (Level) {
         case HARU_LOGGING_TRACE: return "TRACE";
         case HARU_LOGGING_DEBUG: return "DEBUG";
@@ -38,7 +38,7 @@ static void HaruGetTime(char *buffer, size_t size) {
     strftime(buffer, size, "%H:%M:%S", TimeInformation);
 }
 
-void HaruLoggerInit(HaruLogger *Logger) {
+void HaruLoggerInitialize(HaruLogger *Logger) {
     if (!Logger)
         return;
 
