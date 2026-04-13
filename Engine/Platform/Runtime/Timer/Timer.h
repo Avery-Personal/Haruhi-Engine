@@ -1,3 +1,9 @@
+//
+//  Haruhi Engine
+//
+//  Copyright © 2026 AveriC & Averi
+//
+
 #ifndef HARU_TIMER_H
 #define HARU_TIMER_H
 
