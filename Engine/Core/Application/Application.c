@@ -87,8 +87,8 @@ HaruApplication HaruApplicationInitialize() {
 }
 
 HaruResult HaruApplicationCreate(HaruApplicationCreateInfo *ApplicationCreateInfo, HaruApplication **OutputApplication) {
-    HARU_LOG_WARN(&gLogger, "SOFTWARECreateInfo based creation is DEPRECATED\n");
-
+    HARU_LOG_WARN(&gLogger, "[SOFTWARE]CreateInfo based creation is DEPRECATED\n");
+    
     HaruApplication *Application = malloc(sizeof(HaruApplication));
 
     Application -> Name = ApplicationCreateInfo -> Name;
