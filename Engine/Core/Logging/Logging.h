@@ -30,6 +30,8 @@
         HaruLoggingLevel Level;
     } HaruLogger;
 
+    extern HaruLogger gLogger;
+
     void HaruLoggerInitialize(HaruLogger *Logger);
 
     void HaruLoggerSetFile(HaruLogger *Logger, const char *Path);
