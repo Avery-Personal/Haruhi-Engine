@@ -18,6 +18,7 @@
 
 #include "Application.h"
 #include "../../Platform/Runtime/Window/Window.h"
+#include "../Logging/Logging.h"
 
 void HaruApplicationRun(HaruApplication *Application) {
     while (Application -> Running && Application -> Engine.Running) {
@@ -81,7 +82,7 @@ HaruApplication HaruApplicationInitialize() {
 }
 
 HaruResult HaruApplicationCreate(HaruApplicationCreateInfo *ApplicationCreateInfo, HaruApplication **OutputApplication) {
-    fprintf(stderr, "SOFTWARECreateInfo based creation is DEPRECATED\n");
+    HARU_LOG_WARN(&gLogger, "SOFTWARECreateInfo based creation is DEPRECATED\n");
 
     HaruApplication *Application = malloc(sizeof(HaruApplication));
 
