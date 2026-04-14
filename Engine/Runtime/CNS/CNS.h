@@ -81,14 +81,14 @@
 
     CNSType CNSGetType(const CNSStore *DataStore, CNSID NodeID);
 
-    int         CNSAsBool  (const CNSStore *DataStore, CNSID NodeID, int Fallback);
-    int32_t     CNSAsI32   (const CNSStore *DataStore, CNSID NodeID, int32_t Fallback);
-    uint32_t    CNSAsU32   (const CNSStore *DataStore, CNSID NodeID, uint32_t Fallback);
-    int64_t     CNSAsI64   (const CNSStore *DataStore, CNSID NodeID, int64_t Fallback);
-    uint64_t    CNSAsU64   (const CNSStore *DataStore, CNSID NodeID, uint64_t Fallback);
-    double      CNSAsF64   (const CNSStore *DataStore, CNSID NodeID, double Fallback);
+    int CNSAsBool (const CNSStore *DataStore, CNSID NodeID, int Fallback);
+    int32_t CNSAsI32 (const CNSStore *DataStore, CNSID NodeID, int32_t Fallback);
+    uint32_t CNSAsU32 (const CNSStore *DataStore, CNSID NodeID, uint32_t Fallback);
+    int64_t CNSAsI64 (const CNSStore *DataStore, CNSID NodeID, int64_t Fallback);
+    uint64_t CNSAsU64 (const CNSStore *DataStore, CNSID NodeID, uint64_t Fallback);
+    double CNSAsF64 (const CNSStore *DataStore, CNSID NodeID, double Fallback);
     const char *CNSAsString (const CNSStore *DataStore, CNSID NodeID);
-    const void *CNSAsBlob   (const CNSStore *DataStore, CNSID NodeID, uint32_t *SizeOut);
+    const void *CNSAsBlob (const CNSStore *DataStore, CNSID NodeID, uint32_t *SizeOut);
 
     int CNSSetNull (CNSStore *DataStore, CNSID NodeID);
     int CNSSetBool (CNSStore *DataStore, CNSID NodeID, int Value);
