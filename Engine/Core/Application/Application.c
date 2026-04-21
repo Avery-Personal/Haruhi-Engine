@@ -18,6 +18,7 @@
 
 #include "Application.h"
 #include "../../Platform/Runtime/Window/Window.h"
+#include "../Debug/Forth/HaruEngineForth.h"
 #include "../Logging/Logging.h"
 
 void HaruApplicationRun(HaruApplication *Application) {
@@ -83,6 +84,10 @@ HaruApplication HaruApplicationInitialize() {
 
     HaruTimeInitialize(&Application.Time);
 
+    HaruForthInitialize(&Application.DebugConsole);
+    HaruForthSetUserData(&Application.DebugConsole, &Application);
+    HaruForthRegisterEngineWords(&Application.DebugConsole);
+
     return Application;
 }
 
@@ -92,7 +97,7 @@ HaruResult HaruApplicationCreate(HaruApplicationCreateInfo *ApplicationCreateInf
     HaruApplication *Application = malloc(sizeof(HaruApplication));
 
     Application -> Name = ApplicationCreateInfo -> Name;
-    Application -> Version = ApplicationCreateInfo -> Version; 
+    Application -> Version = ApplicationCreateInfo -> Version;
 
     Application -> Engine = HaruEngineInitialize();
     Application -> Running = HARU_TRUE;
