@@ -13,22 +13,24 @@ static void HaruForthDefaultPrint(HaruForthContext *Context, const char *Text) {
 }
 
 static int HaruForthWordDup(HaruForthContext *Context) {
-    double Value;
-
+    HaruForthValue Value;
     if (!HaruForthPeek(Context, 0, &Value))
         return 0;
+        
+    if (Value.Type != HARU_FORTH_TYPE_NUMBER)
+        return 0;
     
-    return HaruForthPushNumber(Context, Value);
+    return HaruForthPushNumber(Context, Value.As.Number);
 }
 
 static int HaruForthWordDrop(HaruForthContext *Context) {
-    double Dummy;
+    HaruForthValue Dummy;
 
     return HaruForthPop(Context, &Dummy);
 }
 
 static int HaruForthWordSwap(HaruForthContext *Context) {
-    double A, B;
+    HaruForthValue A, B;
 
     if (!HaruForthPop(Context, &A))
         return 0;
@@ -36,22 +38,22 @@ static int HaruForthWordSwap(HaruForthContext *Context) {
     if (!HaruForthPop(Context, &B))
         return 0;
 
-    if (!HaruForthPushNumber(Context, A))
+    if (!HaruForthPushNumber(Context, A.As.Number))
         return 0;
 
-    if (!HaruForthPushNumber(Context, B))
+    if (!HaruForthPushNumber(Context, B.As.Number))
         return 0;
 
     return 1;
 }
 
 static int HaruForthWordOver(HaruForthContext *Context) {
-    double Value;
+    HaruForthValue Value;
 
     if (!HaruForthPeek(Context, 1, &Value))
         return 0;
 
-    return HaruForthPushNumber(Context, Value);
+    return HaruForthPushNumber(Context, Value.As.Number);
 }
 
 static int HaruForthWordAdd(HaruForthContext *Context) {
@@ -74,7 +76,7 @@ static int HaruForthWordAdd(HaruForthContext *Context) {
 }
 
 static int HaruForthWordSub(HaruForthContext *Context) {
-    double A, B;
+    HaruForthValue A, B;
 
     if (!HaruForthPop(Context, &B))
         return 0;
@@ -82,11 +84,11 @@ static int HaruForthWordSub(HaruForthContext *Context) {
     if (!HaruForthPop(Context, &A))
         return 0;
 
-    return HaruForthPushNumber(Context, A - B);
+    return HaruForthPushNumber(Context, A.As.Number - B.As.Number);
 }
 
 static int HaruForthWordMul(HaruForthContext *Context) {
-    double A, B;
+    HaruForthValue A, B;
 
     if (!HaruForthPop(Context, &B))
         return 0;
@@ -94,11 +96,11 @@ static int HaruForthWordMul(HaruForthContext *Context) {
     if (!HaruForthPop(Context, &A))
         return 0;
         
-    return HaruForthPushNumber(Context, A * B);
+    return HaruForthPushNumber(Context, A.As.Number * B.As.Number);
 }
 
 static int HaruForthWordDiv(HaruForthContext *Context) {
-    double A, B;
+    HaruForthValue A, B;
 
     if (!HaruForthPop(Context, &B))
         return 0;
@@ -106,13 +108,13 @@ static int HaruForthWordDiv(HaruForthContext *Context) {
     if (!HaruForthPop(Context, &A))
         return 0;
 
-    if (B == 0.0) {
+    if (B.As.Number == 0.0) {
         if (Context -> Print)
             Context -> Print(Context, "Forth error: division by zero");
 
         return 0;
     }
-    return HaruForthPushNumber(Context, A / B);
+    return HaruForthPushNumber(Context, A.As.Number / B.As.Number);
 }
 
 static int HaruForthWordDot(HaruForthContext *Context) {
@@ -186,13 +188,13 @@ static int HaruForthWordCr(HaruForthContext *Context) {
 }
 
 static int HaruForthWordEmit(HaruForthContext *Context) {
-    double Value;
+    HaruForthValue Value;
     char Buffer[2];
 
     if (!HaruForthPop(Context, &Value))
         return 0;
 
-    Buffer[0] = (char)((int) Value);
+    Buffer[0] = (char)((int) Value.As.Number);
     Buffer[1] = '\0';
 
     if (Context -> Print)
