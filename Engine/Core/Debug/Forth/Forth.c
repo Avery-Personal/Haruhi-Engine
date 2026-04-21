@@ -18,7 +18,7 @@ static int HaruForthWordDup(HaruForthContext *Context) {
     if (!HaruForthPeek(Context, 0, &Value))
         return 0;
     
-    return HaruForthPush(Context, Value);
+    return HaruForthPushNumber(Context, Value);
 }
 
 static int HaruForthWordDrop(HaruForthContext *Context) {
@@ -36,10 +36,10 @@ static int HaruForthWordSwap(HaruForthContext *Context) {
     if (!HaruForthPop(Context, &B))
         return 0;
 
-    if (!HaruForthPush(Context, A))
+    if (!HaruForthPushNumber(Context, A))
         return 0;
 
-    if (!HaruForthPush(Context, B))
+    if (!HaruForthPushNumber(Context, B))
         return 0;
 
     return 1;
@@ -51,11 +51,11 @@ static int HaruForthWordOver(HaruForthContext *Context) {
     if (!HaruForthPeek(Context, 1, &Value))
         return 0;
 
-    return HaruForthPush(Context, Value);
+    return HaruForthPushNumber(Context, Value);
 }
 
 static int HaruForthWordAdd(HaruForthContext *Context) {
-    double A, B;
+    HaruForthValue A, B;
 
     if (!HaruForthPop(Context, &B))
         return 0;
@@ -63,7 +63,14 @@ static int HaruForthWordAdd(HaruForthContext *Context) {
     if (!HaruForthPop(Context, &A))
         return 0;
 
-    return HaruForthPush(Context, A + B);
+    if (A.Type != HARU_FORTH_TYPE_NUMBER || B.Type != HARU_FORTH_TYPE_NUMBER) {
+        if (Context -> Print)
+            Context -> Print(Context, "Type error: + expects numbers");
+
+        return 0;
+    }
+
+    return HaruForthPushNumber(Context, A.As.Number + B.As.Number);
 }
 
 static int HaruForthWordSub(HaruForthContext *Context) {
@@ -75,7 +82,7 @@ static int HaruForthWordSub(HaruForthContext *Context) {
     if (!HaruForthPop(Context, &A))
         return 0;
 
-    return HaruForthPush(Context, A - B);
+    return HaruForthPushNumber(Context, A - B);
 }
 
 static int HaruForthWordMul(HaruForthContext *Context) {
@@ -87,7 +94,7 @@ static int HaruForthWordMul(HaruForthContext *Context) {
     if (!HaruForthPop(Context, &A))
         return 0;
         
-    return HaruForthPush(Context, A * B);
+    return HaruForthPushNumber(Context, A * B);
 }
 
 static int HaruForthWordDiv(HaruForthContext *Context) {
@@ -105,17 +112,20 @@ static int HaruForthWordDiv(HaruForthContext *Context) {
 
         return 0;
     }
-    return HaruForthPush(Context, A / B);
+    return HaruForthPushNumber(Context, A / B);
 }
 
 static int HaruForthWordDot(HaruForthContext *Context) {
-    double Value;
-    char Buffer[64];
-
+    HaruForthValue Value;
     if (!HaruForthPop(Context, &Value))
         return 0;
 
-    snprintf(Buffer, sizeof(Buffer), "%.17g", Value);
+    char Buffer[64];
+
+    if (Value.Type == HARU_FORTH_TYPE_NUMBER)
+        snprintf(Buffer, sizeof(Buffer), "%.17g", Value.As.Number);
+    else
+        snprintf(Buffer, sizeof(Buffer), "%s", Value.As.String);
 
     if (Context -> Print)
         Context -> Print(Context, Buffer);
@@ -130,7 +140,11 @@ static int HaruForthWordDotS(HaruForthContext *Context) {
     Offset += snprintf(Buffer + Offset, sizeof(Buffer) - (size_t) Offset, "<%d> ", Context -> SP);
 
     for (int i = 0; i < Context -> SP && Offset < (int) sizeof(Buffer); i++) {
-        Offset += snprintf(Buffer + Offset, sizeof(Buffer) - (size_t) Offset, "%.17g ", Context -> Stack[i]);
+        if (Context -> Stack[i].Type == HARU_FORTH_TYPE_NUMBER) {
+            Offset += snprintf(Buffer + Offset, sizeof(Buffer) - Offset, "%.17g ", Context -> Stack[i].As.Number);
+        } else {
+            Offset += snprintf(Buffer + Offset, sizeof(Buffer) - Offset, "%s ", Context -> Stack[i].As.String);
+        }
     }
 
     if (Context -> Print) Context -> Print(Context, Buffer);
@@ -139,7 +153,7 @@ static int HaruForthWordDotS(HaruForthContext *Context) {
 }
 
 static int HaruForthWordDepth(HaruForthContext *Context) {
-    return HaruForthPush(Context, (double) Context -> SP);
+    return HaruForthPushNumber(Context, (double) Context -> SP);
 }
 
 static int HaruForthWordClear(HaruForthContext *Context) {
@@ -225,7 +239,7 @@ int HaruForthRegisterWord(HaruForthContext *Context, const char *Name, HaruForth
     return 1;
 }
 
-int HaruForthPush(HaruForthContext *Context, double Value) {
+int HaruForthPushNumber(HaruForthContext *Context, double Value) {
     if (!Context)
         return 0;
 
@@ -236,12 +250,34 @@ int HaruForthPush(HaruForthContext *Context, double Value) {
         return 0;
     }
 
-    Context -> Stack[Context -> SP++] = Value;
+    Context -> Stack[Context -> SP++] = (HaruForthValue){
+        .Type = HARU_FORTH_TYPE_NUMBER,
+        .As.Number = Value
+    };
 
     return 1;
 }
 
-int HaruForthPop(HaruForthContext *Context, double *Output) {
+int HaruForthPushString(HaruForthContext *Context, const char *Value) {
+    if (!Context)
+        return 0;
+
+    if (Context -> SP >= HARU_FORTH_STACK_MAX) {
+        if (Context -> Print)
+            Context -> Print(Context, "Forth error: stack overflow");
+
+        return 0;
+    }
+
+    Context -> Stack[Context -> SP++] = (HaruForthValue){
+        .Type = HARU_FORTH_TYPE_STRING,
+        .As.String = Value
+    };
+
+    return 1;
+}
+
+int HaruForthPop(HaruForthContext *Context, HaruForthValue *Output) {
     if (!Context || !Output)
         return 0;
 
@@ -257,7 +293,7 @@ int HaruForthPop(HaruForthContext *Context, double *Output) {
     return 1;
 }
 
-int HaruForthPeek(HaruForthContext *Context, int IndexFromTop, double *Output) {
+int HaruForthPeek(HaruForthContext *Context, int IndexFromTop, HaruForthValue *Output) {
     if (!Context || !Output)
         return 0;
 
@@ -296,13 +332,27 @@ int HaruForthExecuteLine(HaruForthContext *Context, const char *Line) {
     while (Token) {
         if (Token[0] == '\\') {
             break;
+        } else if (Token[0] == '"') {
+            char *Start = Line + (Token - Buffer) + 1;
+
+            char *End = strchr(Start, '"');
+            if (!End)
+                return 0;
+
+            *End = '\0';
+
+            HaruForthPushString(Context, Start);
+
+            Token = strtok(NULL, " \t\r\n");
+
+            continue;
         }
 
         char *End = NULL;
         double Value = strtod(Token, &End);
 
         if (End && End != Token && *End == '\0') {
-            if (!HaruForthPush(Context, Value))
+            if (!HaruForthPushNumber(Context, Value))
                 return 0;
 
             Token = strtok(NULL, " \t\r\n");
