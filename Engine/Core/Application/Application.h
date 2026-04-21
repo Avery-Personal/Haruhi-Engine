@@ -22,6 +22,7 @@
     #include "../../Platform/Platform.h"
     #include "../../Platform/Runtime/Window/Window.h"
     #include "../../Platform/Runtime/Timer/Timer.h"
+    #include "../Debug/Forth/Forth.h"
     #include "../System.h"
 
     #define MAX_WINDOWS 8
@@ -40,6 +41,8 @@
         HaruWindow *MainWindow;
         
         int WindowCount;
+        
+        HaruForthContext DebugConsole;
 
         int Running;
         float DeltaTime; // DEPRECATED
