@@ -87,6 +87,7 @@ HaruApplication HaruApplicationInitialize() {
     HaruForthInitialize(&Application.DebugConsole);
     HaruForthSetUserData(&Application.DebugConsole, &Application);
     HaruForthRegisterEngineWords(&Application.DebugConsole);
+    HaruForthRegisterStandardWords(&Application.DebugConsole);
 
     return Application;
 }
