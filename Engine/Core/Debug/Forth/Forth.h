@@ -15,13 +15,27 @@
     typedef int (*HaruForthWordFunction)(HaruForthContext *Context);
     typedef void (*HaruForthPrintFunction)(HaruForthContext *Context, const char *Text);
 
+    typedef enum {
+        HARU_FORTH_TYPE_NUMBER,
+        HARU_FORTH_TYPE_STRING
+    } HaruForthValueType;
+
+    typedef struct {
+        HaruForthValueType Type;
+
+        union {
+            double Number;
+            const char *String;
+        } As;
+    } HaruForthValue;
+
     typedef struct {
         const char *Name;
         HaruForthWordFunction Function;
     } HaruForthWord;
 
     struct HaruForthContext {
-        double Stack[HARU_FORTH_STACK_MAX];
+        HaruForthValue Stack[HARU_FORTH_STACK_MAX];
         int SP;
 
         HaruForthWord Words[HARU_FORTH_WORD_MAX];
@@ -39,9 +53,10 @@
     int HaruForthRegisterWord(HaruForthContext *Context, const char *Name, HaruForthWordFunction Function);
     int HaruForthExecuteLine(HaruForthContext *Context, const char *Line);
 
-    int HaruForthPush(HaruForthContext *Context, double Value);
-    int HaruForthPop(HaruForthContext *Context, double *Output);
-    int HaruForthPeek(HaruForthContext *Context, int IndexFromTop, double *Output);
+    int HaruForthPushNumber(HaruForthContext *Context, double Value);
+    int HaruForthPushString(HaruForthContext *Context, const char *Value);
+    int HaruForthPop(HaruForthContext *Context, HaruForthValue *Output);
+    int HaruForthPeek(HaruForthContext *Context, int IndexFromTop, HaruForthValue *Output);
 
     void HaruForthRegisterStandardWords(HaruForthContext *Context);
 
