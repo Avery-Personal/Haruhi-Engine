@@ -36,8 +36,6 @@ HaruEntry HaruMain() {
         return HARU_EXIT_FAILURE;
     }
 
-    HaruApplicationAddWindow(&Application, WINDOW);
-
     HaruApplicationRun(&Application);
     HaruApplicationShutdown(&Application);
 
