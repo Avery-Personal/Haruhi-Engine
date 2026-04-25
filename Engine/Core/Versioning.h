@@ -11,15 +11,15 @@
 #ifndef CORE_VERSIONING_H
 #define CORE_VERSIONING_H
 
-    #include <stdint.h>
+    #include "Types.h"
 
-    typedef uint32_t HaruVersion;
+    typedef u32 HaruVersion;
 
-    #define HARU_MAKE_VERSION(Major, Minor, Patch) (((uint32_t)(Major) << 22) | ((uint32_t)(Minor) << 12) | ((uint32_t)(Patch)))
+    #define HARU_MAKE_VERSION(Major, Minor, Patch) (((u32)(Major) << 22) | ((u32)(Minor) << 12) | ((u32)(Patch)))
 
-    #define HARU_VERSION_MAJOR(Version) ((uint32_t)(Version) >> 22)
-    #define HARU_VERSION_MINOR(Version) (((uint32_t)(Version) >> 12) & 0x3FF)
-    #define HARU_VERSION_PATCH(Version) ((uint32_t)(Version) & 0xFFF)
+    #define HARU_VERSION_MAJOR(Version) ((u32)(Version) >> 22)
+    #define HARU_VERSION_MINOR(Version) (((u32)(Version) >> 12) & 0x3FF)
+    #define HARU_VERSION_PATCH(Version) ((u32)(Version) & 0xFFF)
 
     #define HARU_ENGINE_VERSION HARU_MAKE_VERSION(0, 1, 0)
 
