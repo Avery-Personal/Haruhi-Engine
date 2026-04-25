@@ -861,6 +861,15 @@ You shan't use this file in the usage of the MIT license in explicit usage outsi
 
 Unless to be stated or of agreement with applicable law or of agreement in explicit acceptance, the software, "ENet", is to be distributed under the License on an "AS IS" BASIS, WITHOUT WARRANTY OR CONDITIONS OF ANY KIND; MIT requirement of EXPLICIT attribution/credit of software using said license.
 
+---
+
+License of Raentro (Raentro Memory Manager Library) - MIT
+
+The software, "Raentro", is of license under the MIT license.
+You shan't use this file in the usage of the MIT license in explicit usage outside of compliance of the software, "Raentro"'s license. You may obtain a copy of such, license, MIT at: https://choosealicense.com/licenses/mit/
+
+Unless to be stated or of agreement with applicable law or of agreement in explicit acceptance, the software, "Raentro", is to be distributed under the License on an "AS IS" BASIS, WITHOUT WARRANTY OR CONDITIONS OF ANY KIND; MIT requirement of EXPLICIT attribution/credit of software using said license.
+
 THIRD-PARTY NOTICES.
 
 The usage of software, "Furi", indirectly includes software of the following: "Vulkan", "OpenGL", "Metal", & "DirectX12".
