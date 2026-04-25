@@ -41,4 +41,13 @@
         void *Data;
     } Component;
 
+    Instance *InstanceCreate(const char *Name);
+    void InstanceDestroy(Instance *Object);
+
+    void InstanceAddChild(Instance *Parent, Instance *Child);
+    void InstanceRemoveChild(Instance *Child);
+
+    void InstanceAddComponent(Instance *Object, Component *_Component);
+    Component *InstanceGetComponent(Instance *Object, ComponentType Type);
+
 #endif
