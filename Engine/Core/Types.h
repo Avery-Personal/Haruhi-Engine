@@ -23,6 +23,8 @@
     typedef unsigned int u32;
     typedef unsigned long long u64;
 
+    typedef const char *String;
+
     typedef enum {
         HARU_FALSE = 0,
         HARU_TRUE = 1
