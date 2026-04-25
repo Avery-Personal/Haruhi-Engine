@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-#include "Bindings.h"
+#include "../Bindings.h"
 
 static void HaruLuaPrintValue(lua_State *State, int Index) {
     int Type = lua_type(State, Index);
@@ -10,22 +10,22 @@ static void HaruLuaPrintValue(lua_State *State, int Index) {
             printf("%s", lua_tostring(State, Index));
             
             break;
-            
+
         case LUA_TBOOLEAN:
             printf(lua_toboolean(State, Index) ? "true" : "false");
             
             break;
-            
+
         case LUA_TNUMBER:
             printf("%g", lua_tonumber(State, Index));
             
             break;
-            
+
         case LUA_TNIL:
             printf("nil");
             
             break;
-            
+
         default:
             printf("%s:%p", lua_typename(State, Type), lua_topointer(State, Index));
             
