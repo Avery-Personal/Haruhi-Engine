@@ -1,7 +1,11 @@
 #ifndef INSTANCE_H
 #define INSTANCE_H
 
+    #define RAENTRO_IMPLEMENTATION
+    #include "../../Third-Party/Raentro.h"
+
     #include "../../Core/System.h"
+    #include "../Components/Component.h"
 
     typedef u64 InstanceID;
 
@@ -28,5 +32,10 @@
     } Instance;
 
     Instance *InstanceCreate(const char *Name);
+
+    void InstanceAddChild(Instance *Parent, Instance *Child);
+    void InstanceAddComponent(Instance *_INSTANCE_, Component *_COMPONENT_);
+
+    Component *InstanceGetComponent(Instance *_INSTANCE_, ComponentType Type);
 
 #endif
