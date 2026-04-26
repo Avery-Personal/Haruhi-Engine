@@ -845,6 +845,24 @@ Unless to be stated or of agreement with applicable law or of agreement in expli
 
 ---
 
+License of Sokol (Sokol Rendering Library) - ZLib
+
+The software, "Sokol", is of license under the ZLib license.
+You shan't use this file in the usage of the ZLib license in explicit usage outside of compliance of the software, "Sokol"'s license. You may obtain a copy of such, license, ZLib at: https://zlib.net/zlib_license.html
+
+Unless to be stated or of agreement with applicable law or of agreement in explicit acceptance, the software, "Sokol", is to be distributed under the License on an "AS IS" BASIS, WITHOUT WARRANTY OR CONDITIONS OF ANY KIND.
+
+---
+
+License of ZLRenderer (Zou Lee's Software Renderer [Alias of ZLRenderer]) - MIT
+
+The software, "ZLRenderer", is of license under the MIT license.
+You shan't use this file in the usage of the MIT license in explicit usage outside of compliance of the software, "ZLRenderer"'s license. You may obtain a copy of such, license, MIT at: https://choosealicense.com/licenses/mit/
+
+Unless to be stated or of agreement with applicable law or of agreement in explicit acceptance, the software, "ZLRenderer", is to be distributed under the License on an "AS IS" BASIS, WITHOUT WARRANTY OR CONDITIONS OF ANY KIND; MIT requirement of EXPLICIT attribution/credit of software using said license.
+
+---
+
 License of Lua (Lua Programming Language) - MIT
 
 The software, "Lua", is of license under the MIT license.
@@ -887,5 +905,7 @@ ATTRIBUTION DEFINITIONS.
 
 "AveriC" refers to software, assets, or works owned or published under the AveriC entity or brand.
 "Averi" refers to works authored personally by the individual Averi.
+
+"ZLRenderer" refers to the software, created by Zhou Le, "Renderer", aliased AS "ZLRenderer" for reduced ambiguity & clarity.
 
 Unless otherwise specified, license terms apply per the named attribution above.
