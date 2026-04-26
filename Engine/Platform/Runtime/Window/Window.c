@@ -182,7 +182,7 @@ void HaruDestroyWindow(HaruWindow *WINDOW) {
 void HaruWindowPollEvents(HaruWindow *WINDOW) {
     static int StatedDeprecation = 0;
     if (!StatedDeprecation) {
-        HARU_LOG_INFO(&gLogger, "Haruhi usage of poll events contains ONLY GLFW support as of now.\n");
+        HARU_LOG_INFO(&gLogger, "Haruhi usage of windowing poll events contains ONLY GLFW support as of now.\n");
 
         StatedDeprecation = 1;
     }
@@ -199,7 +199,7 @@ void HaruPlatformPollEvents(HaruPlatform *Platform) {
     
     static int StatedDeprecation = 0;
     if (!StatedDeprecation) {
-        HARU_LOG_INFO(&gLogger, "Haruhi usage of poll events contains ONLY GLFW support as of now.\n");
+        HARU_LOG_INFO(&gLogger, "Haruhi usage of platforming poll events contains ONLY GLFW support as of now.\n");
 
         StatedDeprecation = 1;
     }
