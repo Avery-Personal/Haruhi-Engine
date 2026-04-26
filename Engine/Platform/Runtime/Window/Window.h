@@ -12,6 +12,7 @@
 #define PWINDOW_H
 
     #include "../../../Core/System.h"
+    #include "../../Core/Input/Input.h"
 
     #define HARUHI_RESOLVE 1
 
@@ -24,7 +25,7 @@
 
     typedef struct HaruApplication HaruApplication;
 
-    typedef struct {
+    typedef struct HaruWindow {
         HaruWindowBackend Backend;
         
         void *Handle;
@@ -57,7 +58,7 @@
     void HaruDestroyWindow(HaruWindow *WINDOW);
     HaruResult HaruInitializeWindowing();
 
-    void HaruWindowPollEvents(HaruWindow *WINDOW);
+    void HaruPlatformPollEvents(HaruPlatform *Platform);
     int HaruWindowShouldClose(HaruWindow *WINDOW);
 
 #endif
