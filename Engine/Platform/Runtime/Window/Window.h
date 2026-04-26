@@ -12,7 +12,7 @@
 #define PWINDOW_H
 
     #include "../../../Core/System.h"
-    #include "../../Core/Input/Input.h"
+    #include "Core/Input/Input.h"
 
     #define HARUHI_RESOLVE 1
 
@@ -58,6 +58,7 @@
     void HaruDestroyWindow(HaruWindow *WINDOW);
     HaruResult HaruInitializeWindowing();
 
+    void HaruWindowPollEvents(HaruWindow *WINDOW);
     void HaruPlatformPollEvents(HaruPlatform *Platform);
     int HaruWindowShouldClose(HaruWindow *WINDOW);
 
