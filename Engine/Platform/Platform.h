@@ -17,7 +17,10 @@
     // TODO: Reconstruct Kunamo's windowing system to be a hybrid mix of GLFW & SDL3
     #include <GLFW/glfw3.h>
 
-    #define MAX_KEYS 256
+    #include "../Core/System.h"
+
+    #define HARU_MAX_KEYS 512
+    #define HARU_MAX_MOUSE_BUTTONS 8
 
     // TODO: Will need to refine Kunamo's architecture to support detection workflow support
     typedef enum {
@@ -42,17 +45,17 @@
     } HaruArchitecture;
 
     typedef struct {
-        int IsPressed;
-        int WasPressed;
+        HaruBoolean IsPressed;
+        HaruBoolean WasPressed;
     } HaruKeyState;
 
     typedef struct {
-        int IsDown;
-        int WasDown;
+        HaruBoolean IsDown;
+        HaruBoolean WasDown;
     } HaruMouseButtonState;
 
     typedef struct {
-        HaruKeyState Keys[MAX_KEYS];
+        HaruKeyState Keys[HARU_MAX_KEYS];
 
         int MouseX;
         int MouseY;
@@ -60,9 +63,10 @@
         int MouseDeltaX;
         int MouseDeltaY;
 
-        int HasFocus;
+        HaruBoolean HasFocus;
+        HaruBoolean HasMousePosition;
 
-        HaruMouseButtonState MouseButtons[3];
+        HaruMouseButtonState MouseButtons[HARU_MAX_MOUSE_BUTTONS];
     } HaruInputState;
 
     typedef struct {
