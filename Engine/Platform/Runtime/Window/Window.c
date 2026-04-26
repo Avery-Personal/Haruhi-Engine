@@ -126,8 +126,11 @@ HaruWindow *HaruCreateWindow(const char *Title, int WIDTH, int HEIGHT) {
             WINDOW -> HEIGHT = HEIGHT;
 
             WINDOW -> ShouldClose = 0;
+            WINDOW -> Backend = HARU_WINDOW_BACKEND_GLFW;
 
             glfwSetWindowUserPointer(GLFWHandle, WINDOW);
+
+            HaruInputBindWindow(WINDOW);
 
             return WINDOW;
         } else if (gWindowBackend == HARU_WINDOW_BACKEND_SDL) {
@@ -184,15 +187,28 @@ void HaruWindowPollEvents(HaruWindow *WINDOW) {
         StatedDeprecation = 1;
     }
 
-    glfwPollEvents();
-
-    if (glfwWindowShouldClose((GLFWwindow *) WINDOW -> Handle)) {
-        WINDOW -> ShouldClose = 1;
+    if (gWindowBackend == HARU_WINDOW_BACKEND_GLFW) {
+        if (glfwWindowShouldClose((GLFWwindow *) WINDOW -> Handle)) {
+            WINDOW -> ShouldClose = 1;
+        }
     }
 }
 
-void HaruPollEvents(HaruPlatform *Platform) {
+void HaruPlatformPollEvents(HaruPlatform *Platform) {
     (void) Platform;
+    
+    static int StatedDeprecation = 0;
+    if (!StatedDeprecation) {
+        HARU_LOG_INFO(&gLogger, "Haruhi usage of poll events contains ONLY GLFW support as of now.\n");
+
+        StatedDeprecation = 1;
+    }
+    
+    if (gWindowBackend == HARU_WINDOW_BACKEND_GLFW) {
+        glfwPollEvents();
+    } else if (gWindowBackend == HARU_WINDOW_BACKEND_SDL) {
+
+    }
 }
 
 int HaruWindowShouldClose(HaruWindow *WINDOW) {
