@@ -55,7 +55,12 @@ file AND OR the end of the file.
 
     #define JUBI_MAX_BODIES 65535
 
-    #define PI 3.14159263f
+    // JubiR is expected to be incompatible with Jubi, though usage of "Jubi" prefix is TO stay
+    #define JUBI_GRAVITY 9.81f;
+
+    #define JPI 3.14159263f
+    #define JEPSILON 1e-6f
+    #define JINFINITY 1e30f
 
     typedef signed char JUBI_INT8;
     typedef signed short JUBI_INT16;
@@ -103,9 +108,6 @@ file AND OR the end of the file.
         JUBI_RESULT_ERROR = -2,
     } JubiResult;
 
-    // JubiR is expected to be incompatible with Jubi, though usage of "Jubi" prefix is TO stay
-    extern double JUBI_GRAVITY = 9.81f;
-
     typedef enum {
         JBODY_DIMENSION_2D, // Invalid as of CURRENT
         JBODY_DIMENSION_3D
@@ -147,6 +149,35 @@ file AND OR the end of the file.
         float x, y, z, w;
     } JQuaternion;
 
+    typedef struct {
+        JVector Position;
+        JQuaternion Rotation;
+        JVector Scale;
+    } JTransform;
+
+    typedef struct {
+        JVector Normal;
+
+        float Distance;
+    } JPlane;
+
+    typedef struct {
+        JVector Origin;
+        JVector Direction;
+    } JRay;
+
+    typedef struct {
+        JVector Minimum;
+        JVector Maximum;
+    } JAABB;
+
+    typedef struct {
+        JVector Normal;
+        JVector ContactPoint;
+
+        float Penetration;
+    } JContact;
+
     typedef struct JubiWorld JubiWorld;
     
     typedef struct {
@@ -186,6 +217,13 @@ file AND OR the end of the file.
         JubiBoolean Destroyed;
     } JubiWorld;
 
+    #define JUBI_SUCCEEDED(Result) ((Result) > 0)
+    #define JUBI_FAILED(Result) ((Result) <= 0)
+
+    float JClamp(float Value, float Minimum, float Maximum);
+    float JSign(float Value);
+    float JAbsoluteValue(float Value);
+
     JVector JVectorAdd(JVector A, JVector B);
     JVector JVectorSubtract(JVector A, JVector B);
     JVector JVectorScale(JVector A, float B);
@@ -214,6 +252,11 @@ file AND OR the end of the file.
     JQuaternion JQuaternionNormalize(JQuaternion Quaternion);
     JQuaternion JQuaternionFromAxisAngle(JVector Axis, float Angle);
     JVector JQuaternionRotateVector(JQuaternion Quaternion, JVector Vector);
+
+    JMatrix4 JTransformToMatrix(JTransform Transform);
+    JVector JTransformApply(JTransform Transform, JVector Vector);
+
+    JubiBoolean JAABBIntersect(JAABB A, JAABB B);
 
     #ifdef JUBI_IMPLEMENTATION
 
