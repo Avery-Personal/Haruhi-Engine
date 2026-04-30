@@ -13,7 +13,7 @@
 ===========================================================
                       VERSION INFORMATION
 
-Jubi Version: 0.1.1
+Jubi Version: 0.1.5
 C Language Standard: C99
 C++ Language Standard: C++98 or C++20
 
@@ -144,9 +144,8 @@ file AND OR the end of the file.
     } JMatrix4;
 
     typedef struct {
-
+        float x, y, z, w;
     } JQuaternion;
-    
 
     typedef struct JubiWorld JubiWorld;
     
