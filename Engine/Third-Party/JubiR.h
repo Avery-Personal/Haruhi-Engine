@@ -220,10 +220,14 @@ file AND OR the end of the file.
     #define JUBI_SUCCEEDED(Result) ((Result) > 0)
     #define JUBI_FAILED(Result) ((Result) <= 0)
 
+    #define JMINIMUM_FLOAT(A, B) (((A) < (B)) ? (A) : (B))
+    #define JMAXIMUM_FLOAT(A, B) (((A) > (B)) ? (A) : (B))
+
     float JClamp(float Value, float Minimum, float Maximum);
     float JSign(float Value);
     float JAbsoluteValue(float Value);
 
+    JVector JVectorMake(float X, float Y, float Z);
     JVector JVectorAdd(JVector A, JVector B);
     JVector JVectorSubtract(JVector A, JVector B);
     JVector JVectorScale(JVector A, float B);
@@ -240,14 +244,16 @@ file AND OR the end of the file.
     JVector JVectorMininum(JVector A, JVector B);
     JVector JVectorMaximum(JVector A, JVector B);
 
-    JMatrix3 JMatrix3Identity();
+    JMatrix3 JMatrix3Identity(void);
     JMatrix3 JMatrix3Multiply(JMatrix3 A, JMatrix3 B);
     JVector JMatrix3MultiplyVector(JMatrix3 Matrix, JVector Vector);
-
     JMatrix3 JMatrix3Transpose(JMatrix3 Matrix);
     JMatrix3 JMatrix3Inverse(JMatrix3 Matrix);
+    
+    JMatrix3 JMatrix3Zero(void);
+    JMatrix4 JMatrix4Zero(void);
 
-    JQuaternion JQuaternionIdentity();
+    JQuaternion JQuaternionIdentity(void);
     JQuaternion JQuaternionMultiply(JQuaternion A, JQuaternion B);
     JQuaternion JQuaternionNormalize(JQuaternion Quaternion);
     JQuaternion JQuaternionFromAxisAngle(JVector Axis, float Angle);
@@ -258,8 +264,47 @@ file AND OR the end of the file.
 
     JubiBoolean JAABBIntersect(JAABB A, JAABB B);
 
-    #ifdef JUBI_IMPLEMENTATION
+    #ifndef JUBI_IMPLEMENTATION
+        float JClamp(float Value, float Minimum, float Maximum) {
+            if (Minimum > Maximum) {
+                float Temporary = Minimum;
 
+                Minimum = Maximum;
+                Maximum = Temporary;
+            }
+
+            if (Value < Minimum)
+                return Minimum;
+                
+            if (Value > Maximum)
+                return Maximum;
+                
+            return Value;
+        }
+
+        float JSign(float Value) {
+            if (Value > 0.0f)
+                return 1.0f;
+
+            if (Value < 0.0f)
+                return -1.0f;
+
+            return 0.0f;
+        }
+
+        float JAbsoluteValue(float Value) {
+            return (Value < 0.0f) ? -Value : Value;
+        }
+
+        static JVector JVectorMake(float X, float Y, float Z) {
+            JVector Result;
+            
+            Result.x = X;
+            Result.y = Y;
+            Result.z = Z;
+            
+            return Result;
+        }
 
         JubiWorld JCreateWorld() {
             JubiWorld WORLD;
