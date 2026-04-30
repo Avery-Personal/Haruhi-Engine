@@ -1,5 +1,35 @@
 /*
 
+    Jubi Physics Library
+    --------------------
+
+    A simple 3D physics library for C/C++ projects.
+
+    Early Development | IN DEVELOPMENT
+    Created by Averi | GitHub: @Avery-Personal
+
+    License: ALLPU License
+
+===========================================================
+                      VERSION INFORMATION
+
+Jubi Version: 0.1.1
+C Language Standard: C99
+C++ Language Standard: C++98 or C++20
+
+Jubi Version Macro(s) & README Versions are official, stable/testable versions that work, all versions after are experimental.
+
+===========================================================
+                     LICENSE INFORMATION
+
+The following software is protected under the ALLPU license.
+More detailed information is present at the root LICENSE
+file AND OR the end of the file.
+
+*/
+
+/*
+
     JubiR Physics Library
 
     The Jubi "R", derived from the "R" series, is a REMADE, from SCRATCH version based off the Jubi Physics Library.
@@ -33,6 +63,8 @@
     typedef unsigned int JUBI_UINT32;
     typedef unsigned long long JUBI_UINT64;
 
+    #define PI 3.14159263f
+
     typedef enum {
         JUBI_FALSE = 0,
         JUBI_TRUE = 1
@@ -40,8 +72,22 @@
 
     typedef enum {
         JUBI_RESULT_SUCCESS = 1,
+
+        JUBI_RESULT_NULL_WORLD = -101,
+        JUBI_RESULT_WORLD_CORRUPTED = -102,
+        JUBI_RESULT_WORLD_DESTROYED = -103,
+        JUBI_RESULT_WORLD_FULL = -104,
+
+        JUBI_RESULT_NULL_BODY = -201,
+        JUBI_RESULT_BODY_NOT_IN_WORLD = -202,
+        JUBI_RESULT_BODY_NOT_VALID = -203,
+
+        JUBI_RESULT_INVALID_VALUE = -301,
+        JUBI_RESULT_NULL_VALUE = -302,
+
         JUBI_RESULT_FAILURE = 0,
-        JUBI_RESULT_ERROR = -1,
+        JUBI_RESULT_UNKNOWN = -1,
+        JUBI_RESULT_ERROR = -2,
     } JubiResult;
 
     // JubiR is expected to be incompatible with Jubi, though usage of "Jubi" prefix is TO stay
@@ -88,6 +134,8 @@
 
         double Mass;
     } JBody;
+
+    
 
     #ifdef __cplusplus
         }
