@@ -206,8 +206,14 @@ file AND OR the end of the file.
     JMatrix3 JMatrix3Multiply(JMatrix3 A, JMatrix3 B);
     JVector JMatrix3MultiplyVector(JMatrix3 Matrix, JVector Vector);
 
-    JMatrix3 JMatrix3Transpose(JMatrix3 m);
-    JMatrix3 JMatrix3Inverse(JMatrix3 m);
+    JMatrix3 JMatrix3Transpose(JMatrix3 Matrix);
+    JMatrix3 JMatrix3Inverse(JMatrix3 Matrix);
+
+    JQuaternion JQuaternionIdentity();
+    JQuaternion JQuaternionMultiply(JQuaternion A, JQuaternion B);
+    JQuaternion JQuaternionNormalize(JQuaternion Quaternion);
+    JQuaternion JQuaternionFromAxisAngle(JVector Axis, float Angle);
+    JVector JQuaternionRotateVector(JQuaternion Quaternion, JVector Vector);
 
     #ifdef JUBI_IMPLEMENTATION
 
