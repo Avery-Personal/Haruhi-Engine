@@ -298,12 +298,287 @@ file AND OR the end of the file.
 
         static JVector JVectorMake(float X, float Y, float Z) {
             JVector Result;
-            
+
             Result.x = X;
             Result.y = Y;
             Result.z = Z;
-            
+
             return Result;
+        }
+
+        JVector JVectorAdd(JVector A, JVector B) {
+            return JVectorMake(A.x + B.x, A.y + B.y, A.z + B.z);
+        }
+
+        JVector JVectorSubtract(JVector A, JVector B) {
+            return JVectorMake(A.x - B.x, A.y - B.y, A.z - B.z);
+        }
+
+        JVector JVectorScale(JVector A, float B) {
+            return JVectorMake(A.x * B, A.y * B, A.z * B);
+        }
+
+        JVector JVectorDivide(JVector A, float B) {
+            if (JAbsoluteValue(B) <= JEPSILON) {
+                return JVectorMake(0.0f, 0.0f, 0.0f);
+            }
+
+            return JVectorMake(A.x / B, A.y / B, A.z / B);
+        }
+
+        float JVectorDot(JVector A, JVector B) {
+            return (A.x * B.x) + (A.y * B.y) + (A.z * B.z);
+        }
+
+        JVector JVectorCross(JVector A, JVector B) {
+            return JVectorMake((A.y * B.z) - (A.z * B.y), (A.z * B.x) - (A.x * B.z), (A.x * B.y) - (A.y * B.x));
+        }
+
+        float JVectorLength(JVector Vector) {
+            return sqrtf(JVectorDot(Vector, Vector));
+        }
+
+        float JVectorLengthSqrt(JVector Vector) {
+            return JVectorDot(Vector, Vector);
+        }
+
+        JVector JVectorNormalize(JVector Vector) {
+            float Length = JVectorLength(Vector);
+            if (Length <= JEPSILON) {
+                return JVectorMake(0.0f, 0.0f, 0.0f);
+            }
+
+            return JVectorDivide(Vector, Length);
+        }
+
+        JVector JVectorLerp(JVector A, JVector B, float t) {
+            return JVectorMake(A.x + (B.x - A.x) * t, A.y + (B.y - A.y) * t, A.z + (B.z - A.z) * t);
+        }
+
+        JVector JVectorMininum(JVector A, JVector B) {
+            return JVectorMake(JMINIMUM_FLOAT(A.x, B.x), JMINIMUM_FLOAT(A.y, B.y), JMINIMUM_FLOAT(A.z, B.z));
+        }
+
+        JVector JVectorMaximum(JVector A, JVector B) {
+            return JVectorMake(JMAXIMUM_FLOAT(A.x, B.x), JMAXIMUM_FLOAT(A.y, B.y), JMAXIMUM_FLOAT(A.z, B.z));
+        }
+
+        JVector JVectorMinimum(JVector A, JVector B) {
+            return JVectorMininum(A, B);
+        }
+
+        JMatrix3 JMatrix3Identity(void) {
+            JMatrix3 Result = {0};
+
+            Result.Matrix[0][0] = 1.0f;
+            Result.Matrix[1][1] = 1.0f;
+            Result.Matrix[2][2] = 1.0f;
+
+            return Result;
+        }
+
+        JMatrix3 JMatrix3Multiply(JMatrix3 A, JMatrix3 B) {
+            JMatrix3 Result = {0};
+
+            for (int Row = 0; Row < 3; ++Row) {
+                for (int Column = 0; Column < 3; ++Column) {
+                    Result.Matrix[Row][Column] = (A.Matrix[Row][0] * B.Matrix[0][Column]) + (A.Matrix[Row][1] * B.Matrix[1][Column]) + (A.Matrix[Row][2] * B.Matrix[2][Column]);
+                }
+            }
+
+            return Result;
+        }
+
+        JVector JMatrix3MultiplyVector(JMatrix3 Matrix, JVector Vector) {
+            return JVectorMake((Matrix.Matrix[0][0] * Vector.x) + (Matrix.Matrix[0][1] * Vector.y) + (Matrix.Matrix[0][2] * Vector.z), (Matrix.Matrix[1][0] * Vector.x) + (Matrix.Matrix[1][1] * Vector.y) + (Matrix.Matrix[1][2] * Vector.z), (Matrix.Matrix[2][0] * Vector.x) + (Matrix.Matrix[2][1] * Vector.y) + (Matrix.Matrix[2][2] * Vector.z));
+        }
+
+        JMatrix3 JMatrix3Transpose(JMatrix3 Matrix) {
+            JMatrix3 Result;
+
+            for (int Row = 0; Row < 3; ++Row) {
+                for (int Column = 0; Column < 3; ++Column) {
+                    Result.Matrix[Row][Column] = Matrix.Matrix[Column][Row];
+                }
+            }
+
+            return Result;
+        }
+
+        JMatrix3 JMatrix3Inverse(JMatrix3 Matrix) {
+            float M00 = Matrix.Matrix[0][0], M01 = Matrix.Matrix[0][1], M02 = Matrix.Matrix[0][2];
+            float M10 = Matrix.Matrix[1][0], M11 = Matrix.Matrix[1][1], M12 = Matrix.Matrix[1][2];
+            float M20 = Matrix.Matrix[2][0], M21 = Matrix.Matrix[2][1], M22 = Matrix.Matrix[2][2];
+
+            float C00 = (M11 * M22) - (M12 * M21);
+            float C01 = (M02 * M21) - (M01 * M22);
+            float C02 = (M01 * M12) - (M02 * M11);
+
+            float Determinant = (M00 * C00) + (M10 * C01) + (M20 * C02);
+            if (JAbsoluteValue(Determinant) <= JEPSILON) {
+                return JMatrix3Zero();
+            }
+
+            float InverseDeterminant = 1.0f / Determinant;
+
+            JMatrix3 Result;
+
+            Result.Matrix[0][0] = C00 * InverseDeterminant;
+            Result.Matrix[0][1] = ((M02 * M20) - (M00 * M22)) * InverseDeterminant;
+            Result.Matrix[0][2] = ((M00 * M21) - (M01 * M20)) * InverseDeterminant;
+
+            Result.Matrix[1][0] = C01 * InverseDeterminant;
+            Result.Matrix[1][1] = ((M00 * M22) - (M02 * M20)) * InverseDeterminant;
+            Result.Matrix[1][2] = ((M01 * M20) - (M00 * M21)) * InverseDeterminant;
+
+            Result.Matrix[2][0] = C02 * InverseDeterminant;
+            Result.Matrix[2][1] = ((M01 * M12) - (M02 * M11)) * InverseDeterminant;
+            Result.Matrix[2][2] = ((M00 * M11) - (M01 * M10)) * InverseDeterminant;
+
+            return Result;
+        }
+
+        JQuaternion JQuaternionIdentity(void) {
+            JQuaternion Result;
+
+            Result.x = 0.0f;
+            Result.y = 0.0f;
+            Result.z = 0.0f;
+            Result.w = 1.0f;
+
+            return Result;
+        }
+
+        JQuaternion JQuaternionMultiply(JQuaternion A, JQuaternion B) {
+            JQuaternion Result;
+
+            Result.x = (A.w * B.x) + (A.x * B.w) + (A.y * B.z) - (A.z * B.y);
+            Result.y = (A.w * B.y) - (A.x * B.z) + (A.y * B.w) + (A.z * B.x);
+            Result.z = (A.w * B.z) + (A.x * B.y) - (A.y * B.x) + (A.z * B.w);
+            Result.w = (A.w * B.w) - (A.x * B.x) - (A.y * B.y) - (A.z * B.z);
+
+            return Result;
+        }
+
+        JQuaternion JQuaternionNormalize(JQuaternion Quaternion) {
+            float Length = sqrtf((Quaternion.x * Quaternion.x) + (Quaternion.y * Quaternion.y) + (Quaternion.z * Quaternion.z) + (Quaternion.w * Quaternion.w));
+            if (Length <= JEPSILON) {
+                return JQuaternionIdentity();
+            }
+
+            Quaternion.x /= Length;
+            Quaternion.y /= Length;
+            Quaternion.z /= Length;
+            Quaternion.w /= Length;
+
+            return Quaternion;
+        }
+
+        JQuaternion JQuaternionFromAxisAngle(JVector Axis, float Angle) {
+            float AxisLength = JVectorLength(Axis);
+            if (AxisLength <= JEPSILON) {
+                return JQuaternionIdentity();
+            }
+
+            JVector DividedAxis = JVectorDivide(Axis, AxisLength);
+
+            float HalfAngle = Angle * 0.5f;
+            float Sin = sinf(HalfAngle);
+            float Cos = cosf(HalfAngle);
+
+            JQuaternion Result;
+
+            Result.x = DividedAxis.x * Sin;
+            Result.y = DividedAxis.y * Sin;
+            Result.z = DividedAxis.z * Sin;
+            Result.w = Cos;
+
+            return JQuaternionNormalize(Result);
+        }
+
+        JVector JQuaternionRotateVector(JQuaternion Quaternion, JVector Vector) {
+            Quaternion = JQuaternionNormalize(Quaternion);
+
+            JVector QVector = JVectorMake(Quaternion.x, Quaternion.y, Quaternion.z);
+            JVector Scale = JVectorScale(JVectorCross(QVector, Vector), 2.0f);
+            JVector Result = JVectorAdd(Vector, JVectorAdd(JVectorScale(Scale, Quaternion.w), JVectorCross(QVector, Scale)));
+
+            return Result;
+        }
+
+        JMatrix4 JTransformToMatrix(JTransform Transform) {
+            Transform.Rotation = JQuaternionNormalize(Transform.Rotation);
+
+            float X = Transform.Rotation.x;
+            float Y = Transform.Rotation.y;
+            float Z = Transform.Rotation.z;
+            float W = Transform.Rotation.w;
+
+            float XX = X * X;
+            float YY = Y * Y;
+            float ZZ = Z * Z;
+            float XY = X * Y;
+            float XZ = X * Z;
+            float YZ = Y * Z;
+            float WX = W * X;
+            float WY = W * Y;
+            float WZ = W * Z;
+
+            float SX = Transform.Scale.x;
+            float SY = Transform.Scale.y;
+            float SZ = Transform.Scale.z;
+
+            JMatrix4 Result = {0};
+
+            Result.Matrix[0][0] = (1.0f - 2.0f * (YY + ZZ)) * SX;
+            Result.Matrix[0][1] = (2.0f * (XY - WZ)) * SY;
+            Result.Matrix[0][2] = (2.0f * (XZ + WY)) * SZ;
+            Result.Matrix[0][3] = Transform.Position.x;
+
+            Result.Matrix[1][0] = (2.0f * (XY + WZ)) * SX;
+            Result.Matrix[1][1] = (1.0f - 2.0f * (XX + ZZ)) * SY;
+            Result.Matrix[1][2] = (2.0f * (YZ - WX)) * SZ;
+            Result.Matrix[1][3] = Transform.Position.y;
+
+            Result.Matrix[2][0] = (2.0f * (XZ - WY)) * SX;
+            Result.Matrix[2][1] = (2.0f * (YZ + WX)) * SY;
+            Result.Matrix[2][2] = (1.0f - 2.0f * (XX + YY)) * SZ;
+            Result.Matrix[2][3] = Transform.Position.z;
+
+            Result.Matrix[3][0] = 0.0f;
+            Result.Matrix[3][1] = 0.0f;
+            Result.Matrix[3][2] = 0.0f;
+            Result.Matrix[3][3] = 1.0f;
+
+            return Result;
+        }
+
+        JVector JTransformApply(JTransform Transform, JVector Vector) {
+            Transform.Rotation = JQuaternionNormalize(Transform.Rotation);
+
+            JVector Scaled = JVectorMake(Vector.x * Transform.Scale.x, Vector.y * Transform.Scale.y, Vector.z * Transform.Scale.z);
+            JVector Rotated = JQuaternionRotateVector(Transform.Rotation, Scaled);
+
+            return JVectorAdd(Rotated, Transform.Position);
+        }
+
+        JubiBoolean JAABBIntersect(JAABB A, JAABB B) {
+            JVector AMinimum = JVectorMininum(A.Minimum, A.Maximum);
+            JVector AMaximum = JVectorMaximum(A.Minimum, A.Maximum);
+
+            JVector BMinimum = JVectorMininum(B.Minimum, B.Maximum);
+            JVector BMaximum = JVectorMaximum(B.Minimum, B.Maximum);
+
+            if (AMaximum.x < BMinimum.x || AMinimum.x > BMaximum.x)
+                return JUBI_FALSE;
+
+            if (AMaximum.y < BMinimum.y || AMinimum.y > BMaximum.y)
+                return JUBI_FALSE;
+
+            if (AMaximum.z < BMinimum.z || AMinimum.z > BMaximum.z)
+                return JUBI_FALSE;
+
+            return JUBI_TRUE;
         }
 
         JubiWorld JCreateWorld() {
