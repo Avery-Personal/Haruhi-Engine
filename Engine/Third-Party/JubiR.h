@@ -13,7 +13,7 @@
 ===========================================================
                       VERSION INFORMATION
 
-Jubi Version: 0.1.5
+Jubi Version: 0.2.2
 C Language Standard: C99
 C++ Language Standard: C++98 or C++20
 
@@ -46,7 +46,7 @@ file AND OR the end of the file.
 #define JUBIR_H
 
     #include <stdio.h>
-
+    #include <string.h>
     #include <math.h>
 
     #ifdef __cplusplus
@@ -181,7 +181,7 @@ file AND OR the end of the file.
     typedef struct JubiWorld JubiWorld;
     
     typedef struct {
-        JBodyDimension Dimension;
+        //JBodyDimension Dimension;
 
         JVector Position;
         JVector Velocity;
@@ -263,6 +263,10 @@ file AND OR the end of the file.
     JVector JTransformApply(JTransform Transform, JVector Vector);
 
     JubiBoolean JAABBIntersect(JAABB A, JAABB B);
+
+    JubiWorld JCreateWorld();
+    void JClearWorld(JubiWorld *World);
+    void JDestroyWorld2D(JubiWorld *World);
 
     #ifndef JUBI_IMPLEMENTATION
         float JClamp(float Value, float Minimum, float Maximum) {
@@ -589,6 +593,52 @@ file AND OR the end of the file.
             WORLD.Destroyed = JUBI_FALSE;
 
             return WORLD;
+        }
+
+        void JClearWorld(JubiWorld *World) {
+            if (World == NULL)
+                return;
+
+            if (World -> Destroyed)
+                return;
+
+            World -> BodyCount = 0;
+        }
+
+        void JDestroyWorld(JubiWorld *World) {
+            if (World == NULL) return;
+            if (World -> Destroyed) return;
+
+            for (int i=0; i < JUBI_MAX_BODIES; ++i) {
+                World -> Bodies[i] = (JBody){0};
+            }
+
+            World -> BodyCount = 0;
+            World -> Gravity = 0.0f;
+            World -> Destroyed = JUBI_TRUE;
+        }
+
+        JubiBoolean JWorldIsDestroyed(JubiWorld *World) {
+            if (World == NULL)
+                return JUBI_FALSE;
+
+            return World -> Destroyed == JUBI_TRUE ? JUBI_TRUE : JUBI_FALSE;
+        }
+
+        JubiResult JIsWorldValid(JubiWorld *World) {
+            if (World == NULL)
+                return JUBI_RESULT_NULL_WORLD;
+                
+            if (World -> BodyCount < 0)
+                return JUBI_RESULT_WORLD_CORRUPTED;
+                
+            if (World -> BodyCount > JUBI_MAX_BODIES)
+                return JUBI_RESULT_WORLD_FULL;
+                
+            if (World -> Destroyed == JUBI_TRUE)
+                return JUBI_RESULT_WORLD_DESTROYED;
+                
+            return JUBI_RESULT_SUCCESS;
         }
     #endif
 
