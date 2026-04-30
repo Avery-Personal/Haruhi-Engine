@@ -267,6 +267,8 @@ file AND OR the end of the file.
     JubiWorld JCreateWorld();
     void JClearWorld(JubiWorld *World);
     void JDestroyWorld2D(JubiWorld *World);
+    JubiBoolean JWorldIsDestroyed(JubiWorld *World);
+    JubiResult JIsWorldValid(JubiWorld *World);
 
     #ifndef JUBI_IMPLEMENTATION
         float JClamp(float Value, float Minimum, float Maximum) {
@@ -628,16 +630,16 @@ file AND OR the end of the file.
         JubiResult JIsWorldValid(JubiWorld *World) {
             if (World == NULL)
                 return JUBI_RESULT_NULL_WORLD;
-                
+
             if (World -> BodyCount < 0)
                 return JUBI_RESULT_WORLD_CORRUPTED;
-                
+
             if (World -> BodyCount > JUBI_MAX_BODIES)
                 return JUBI_RESULT_WORLD_FULL;
-                
+
             if (World -> Destroyed == JUBI_TRUE)
                 return JUBI_RESULT_WORLD_DESTROYED;
-                
+
             return JUBI_RESULT_SUCCESS;
         }
     #endif
