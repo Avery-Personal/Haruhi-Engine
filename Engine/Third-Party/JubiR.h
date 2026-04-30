@@ -53,6 +53,10 @@ file AND OR the end of the file.
         extern "C" {
     #endif
 
+    #define JUBI_MAX_BODIES 65535
+
+    #define PI 3.14159263f
+
     typedef signed char JUBI_INT8;
     typedef signed short JUBI_INT16;
     typedef signed int JUBI_INT32;
@@ -63,7 +67,7 @@ file AND OR the end of the file.
     typedef unsigned int JUBI_UINT32;
     typedef unsigned long long JUBI_UINT64;
 
-    #define PI 3.14159263f
+    typedef int JIndex;
 
     typedef enum {
         JUBI_FALSE = 0,
@@ -103,7 +107,7 @@ file AND OR the end of the file.
     extern double JUBI_GRAVITY = 9.81f;
 
     typedef enum {
-        JBODY_DIMENSION_2D,
+        JBODY_DIMENSION_2D, // Invalid as of CURRENT
         JBODY_DIMENSION_3D
     } JBodyDimension;
 
@@ -130,6 +134,8 @@ file AND OR the end of the file.
         // Vector 3 to be Z, of dynamic usage
         float Vector[3];
     } JVector;
+
+    typedef struct JubiWorld JubiWorld;
     
     typedef struct {
         JBodyDimension Dimension;
@@ -141,10 +147,44 @@ file AND OR the end of the file.
         JShape Shape;
         JBodyType BodyType;
 
+        JVector Force;
+        JVector AccumulatedForce;
+
         double Mass;
+        double InverseMass;
+        
+        float Restitution;
+        float Friction;
+
+        union {
+            JubiBoolean CAN_ROTATE; // Naturally assumed?
+        } ShapeData;
+
+        JIndex Index;
+        JubiWorld *World;
     } JBody;
 
-    
+    typedef struct JubiWorld {
+        JBody Bodies[JUBI_MAX_BODIES];
+
+        int BodyCount;
+
+        float Gravity;
+
+        JubiBoolean Destroyed;
+    } JubiWorld;
+
+    #ifdef JUBI_IMPLEMENTATION
+        JubiWorld JCreateWorld() {
+            JubiWorld WORLD;
+
+            WORLD.BodyCount = 0;
+            WORLD.Gravity = JUBI_GRAVITY;
+            WORLD.Destroyed = JUBI_FALSE;
+
+            return WORLD;
+        }
+    #endif
 
     #ifdef __cplusplus
         }
