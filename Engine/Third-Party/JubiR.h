@@ -135,6 +135,19 @@ file AND OR the end of the file.
         float Vector[3];
     } JVector;
 
+    typedef struct {
+        float Matrix[3][3];
+    } JMatrix3;
+
+    typedef struct {
+        float Matrix[4][4];
+    } JMatrix4;
+
+    typedef struct {
+
+    } JQuaternion;
+    
+
     typedef struct JubiWorld JubiWorld;
     
     typedef struct {
@@ -174,7 +187,32 @@ file AND OR the end of the file.
         JubiBoolean Destroyed;
     } JubiWorld;
 
+    JVector JVectorAdd(JVector A, JVector B);
+    JVector JVectorSubtract(JVector A, JVector B);
+    JVector JVectorScale(JVector A, float B);
+    JVector JVectorDivide(JVector A, float B);
+
+    float JVectorDot(JVector A, JVector B);
+    JVector JVectorCross(JVector A, JVector B);
+
+    float JVectorLength(JVector Vector);
+    float JVectorLengthSqrt(JVector Vector);
+    JVector JVectorNormalize(JVector Vector);
+
+    JVector JVectorLerp(JVector A, JVector B, float t);
+    JVector JVectorMininum(JVector A, JVector B);
+    JVector JVectorMaximum(JVector A, JVector B);
+
+    JMatrix3 JMatrix3Identity();
+    JMatrix3 JMatrix3Multiply(JMatrix3 A, JMatrix3 B);
+    JVector JMatrix3MultiplyVector(JMatrix3 Matrix, JVector Vector);
+
+    JMatrix3 JMatrix3Transpose(JMatrix3 m);
+    JMatrix3 JMatrix3Inverse(JMatrix3 m);
+
     #ifdef JUBI_IMPLEMENTATION
+
+
         JubiWorld JCreateWorld() {
             JubiWorld WORLD;
 
