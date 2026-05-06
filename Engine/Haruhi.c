@@ -19,17 +19,17 @@ HaruEntry HaruMain() {
 
     gLogger.EnableFile = 0;
 
-    HaruContext *Context;
+    HaruContext Context = HaruContextInitialize();
 
-    HaruContextSetLogger(Context, &gLogger);
+    HaruContextSetLogger(&Context, &gLogger);
 
     HaruApplication Application = HaruApplicationInitialize();
 
     Application.Name = "Haruhi Engine";
     Application.Version = HARU_ENGINE_VERSION;
 
-    HaruContextAttachApplication(Context, &Application);
-    HaruContextBootstrap(Context);
+    HaruContextAttachApplication(&Context, &Application);
+    HaruContextBootstrap(&Context);
 
     if (HaruInitializeWindowing() != HARU_RESULT_SUCCESS) {
         HARU_LOG_FATAL(&gLogger, "Haruhi windowing initialization failed.\n");
@@ -47,7 +47,7 @@ HaruEntry HaruMain() {
     HaruApplicationRun(&Application);
     HaruApplicationShutdown(&Application);
 
-    HaruContextShutdown(Context);
+    HaruContextShutdown(&Context);
 
     return HARU_EXIT_SUCCESS;
 }
