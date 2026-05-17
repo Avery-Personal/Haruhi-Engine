@@ -119,6 +119,56 @@ void HaruRendererDestroy(HaruRenderer *Renderer) {
     if (!Renderer)
         return;
 
+    if (Renderer -> Device) {
+        vkDeviceWaitIdle(Renderer -> Device);
+
+        HaruRendererDestroyMeshes(Renderer);
+        HaruRendererDestroyPipelines(Renderer);
+        HaruRendererDestroySwapchainObjects(Renderer);
+
+        if (Renderer -> CommandBuffers) {
+            free(Renderer -> CommandBuffers);
+            
+            Renderer -> CommandBuffers = NULL;
+        }
+
+        if (Renderer -> CommandPool) {
+            vkDestroyCommandPool(Renderer -> Device, Renderer -> CommandPool, NULL);
+            
+            Renderer -> CommandPool = VK_NULL_HANDLE;
+        }
+
+        for (int i = 0; i < 2; i++) {
+            if (Renderer -> ImageAvailableSemaphores[i]) {
+                vkDestroySemaphore(Renderer -> Device, Renderer -> ImageAvailableSemaphores[i], NULL);
+            }
+            
+            if (Renderer -> RenderFinishedSemaphores[i]) {
+                vkDestroySemaphore(Renderer -> Device, Renderer -> RenderFinishedSemaphores[i], NULL);
+            }
+            
+            if (Renderer -> InFlightFences[i]) {
+                vkDestroyFence(Renderer -> Device, Renderer -> InFlightFences[i], NULL);
+            }
+        }
+
+        vkDestroyDevice(Renderer -> Device, NULL);
+        
+        Renderer -> Device = VK_NULL_HANDLE;
+    }
+
+    if (Renderer -> Surface && Renderer -> Instance) {
+        vkDestroySurfaceKHR(Renderer -> Instance, Renderer -> Surface, NULL);
+        
+        Renderer -> Surface = VK_NULL_HANDLE;
+    }
+
+    if (Renderer -> Instance) {
+        vkDestroyInstance(Renderer -> Instance, NULL);
+        
+        Renderer -> Instance = VK_NULL_HANDLE;
+    }
+
     free(Renderer);
 }
 
