@@ -13,6 +13,16 @@
 
     #include <setjmp.h>
 
+    #define I8_MAX 127
+    #define I16_MAX 32767
+    #define I32_MAX 2147483647
+    #define I64_MAX 9223372036854775807LL
+
+    #define U8_MAX 255
+    #define U16_MAX 65535
+    #define U32_MAX 4294967295U
+    #define U64_MAX 18446744073709551615ULL
+
     typedef signed char i8;
     typedef signed short i16;
     typedef signed int i32;
