@@ -54,6 +54,19 @@ void HaruRendererBeginFrame(HaruRenderer *Renderer, HaruColor ClearColor) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
+void HaruRendererEndFrame(HaruRenderer *Renderer) {
+    if (!Renderer)
+        return;
+
+    if (!Renderer -> FrameActive) {
+        HARU_LOG_WARN(&gLogger, "EndFrame called without BeginFrame.\n");
+        
+        return;
+    }
+
+    Renderer -> FrameActive = HARU_FALSE;
+}
+
 HaruMesh HaruRendererCreateMesh(HaruRenderer *Renderer, const HaruVertex *Vertices, int VertexCount) {
     HaruMesh Mesh = {-1};
 
@@ -70,6 +83,7 @@ HaruMesh HaruRendererCreateMesh(HaruRenderer *Renderer, const HaruVertex *Vertic
     Internal -> VertexCount = VertexCount;
 
     size_t Size = sizeof(HaruVertex) * VertexCount;
+
     Internal -> VertexBuffer = malloc(Size);
 
     memcpy(Internal -> VertexBuffer, Vertices, Size);
