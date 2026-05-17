@@ -69,11 +69,28 @@ void HaruRendererDestroyPipelines(HaruRenderer *Renderer) {
             vkDestroyPipelineLayout(Renderer -> Device, Renderer -> Pipelines[i].Layout, NULL);
         }
     }
-    
+
     Renderer -> PipelineCount = 0;
 }
 
-HaruRenderer *HaruRendererCreate(int Width, int Height) {
+void HaruRendererDestroyMeshes(HaruRenderer *Renderer) {
+    if (!Renderer || !Renderer -> Device)
+        return;
+
+    for (int i = 0; i < Renderer -> MeshCount; i++) {
+        if (Renderer -> Meshes[i].VertexBuffer) {
+            vkDestroyBuffer(Renderer -> Device, Renderer -> Meshes[i].VertexBuffer, NULL);
+        }
+
+        if (Renderer -> Meshes[i].VertexMemory) {
+            vkFreeMemory(Renderer -> Device, Renderer -> Meshes[i].VertexMemory, NULL);
+        }
+    }
+
+    Renderer -> MeshCount = 0;
+}
+
+HaruRenderer *HaruRendererCreate(HaruWindow *Window) {
     HaruRenderer *Renderer = malloc(sizeof(HaruRenderer));
     if (!Renderer) {
         HARU_LOG_ERROR(&gLogger, "Failed to allocate renderer.\n");
@@ -83,12 +100,17 @@ HaruRenderer *HaruRendererCreate(int Width, int Height) {
 
     memset(Renderer, 0, sizeof(HaruRenderer));
 
-    Renderer -> Width = Width;
-    Renderer -> Height = Height;
+    Renderer -> Window = Window;
+
+    if (Window) {
+        Renderer -> Width = Window -> WIDTH;
+        Renderer -> Height = Window -> HEIGHT;
+    }
+
     Renderer -> FrameActive = HARU_FALSE;
 
-    Renderer -> MeshCount = 0;
-    Renderer -> PipelineCount = 0;
+    Renderer -> CurrentFrame = 0;
+    Renderer -> CurrentImageIndex = 0;
 
     return Renderer;
 }
