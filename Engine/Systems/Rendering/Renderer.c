@@ -49,11 +49,28 @@ void HaruRendererDestroySwapchainObjects(HaruRenderer *Renderer) {
 
     if (Renderer -> Swapchain) {
         vkDestroySwapchainKHR(Renderer -> Device, Renderer -> Swapchain, NULL);
-        
+
         Renderer -> Swapchain = VK_NULL_HANDLE;
     }
 
     Renderer -> SwapchainImageCount = 0;
+}
+
+void HaruRendererDestroyPipelines(HaruRenderer *Renderer) {
+    if (!Renderer || !Renderer -> Device)
+        return;
+
+    for (int i = 0; i < Renderer -> PipelineCount; i++) {
+        if (Renderer -> Pipelines[i].Pipeline) {
+            vkDestroyPipeline(Renderer -> Device, Renderer -> Pipelines[i].Pipeline, NULL);
+        }
+
+        if (Renderer -> Pipelines[i].Layout) {
+            vkDestroyPipelineLayout(Renderer -> Device, Renderer -> Pipelines[i].Layout, NULL);
+        }
+    }
+    
+    Renderer -> PipelineCount = 0;
 }
 
 HaruRenderer *HaruRendererCreate(int Width, int Height) {
