@@ -183,13 +183,13 @@ void HaruRendererBeginFrame(HaruRenderer *Renderer, HaruColor ClearColor) {
 
     if (AcquireResult == VK_ERROR_OUT_OF_DATE_KHR) {
         HARU_LOG_WARN(&gLogger, "Swapchain out of date; recreate swapchain before continuing.\n");
-        
+
         return;
     }
 
     if (AcquireResult != VK_SUCCESS && AcquireResult != VK_SUBOPTIMAL_KHR) {
         HARU_LOG_ERROR(&gLogger, "vkAcquireNextImageKHR failed.\n");
-        
+
         return;
     }
 
@@ -252,15 +252,59 @@ void HaruRendererBeginFrame(HaruRenderer *Renderer, HaruColor ClearColor) {
 }
 
 void HaruRendererEndFrame(HaruRenderer *Renderer) {
-    if (!Renderer)
+    if (!Renderer || !Renderer -> FrameActive)
         return;
 
-    if (!Renderer -> FrameActive) {
-        HARU_LOG_WARN(&gLogger, "EndFrame called without BeginFrame.\n");
+    VkCommandBuffer CommandBuffer = Renderer -> CommandBuffers[Renderer -> CurrentImageIndex];
+
+    vkCmdEndRenderPass(CommandBuffer);
+
+    if (vkEndCommandBuffer(CommandBuffer) != VK_SUCCESS) {
+        HARU_LOG_ERROR(&gLogger, "vkEndCommandBuffer failed.\n");
+
+        Renderer -> FrameActive = HARU_FALSE;
+
+        return;
+    }
+
+    VkPipelineStageFlags WaitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+
+    VkSubmitInfo SubmitInfo = {0};
+
+    SubmitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    SubmitInfo.waitSemaphoreCount = 1;
+    SubmitInfo.pWaitSemaphores = &Renderer -> ImageAvailableSemaphores[Renderer -> CurrentFrame];
+    SubmitInfo.pWaitDstStageMask = WaitStages;
+    SubmitInfo.commandBufferCount = 1;
+    SubmitInfo.pCommandBuffers = &CommandBuffer;
+    SubmitInfo.signalSemaphoreCount = 1;
+    SubmitInfo.pSignalSemaphores = &Renderer -> RenderFinishedSemaphores[Renderer -> CurrentFrame];
+
+    if (vkQueueSubmit(Renderer -> GraphicsQueue, 1, &SubmitInfo, Renderer -> InFlightFences[Renderer -> CurrentFrame]) != VK_SUCCESS) {
+        HARU_LOG_ERROR(&gLogger, "vkQueueSubmit failed.\n");
+        
+        Renderer -> FrameActive = HARU_FALSE;
         
         return;
     }
 
+    VkPresentInfoKHR PresentInfo = {0};
+
+    PresentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+    PresentInfo.waitSemaphoreCount = 1;
+    PresentInfo.pWaitSemaphores = &Renderer -> RenderFinishedSemaphores[Renderer -> CurrentFrame];
+    PresentInfo.swapchainCount = 1;
+    PresentInfo.pSwapchains = &Renderer -> Swapchain;
+    PresentInfo.pImageIndices = &Renderer -> CurrentImageIndex;
+
+    VkResult PresentResult = vkQueuePresentKHR(Renderer -> PresentQueue, &PresentInfo);
+    if (PresentResult == VK_ERROR_OUT_OF_DATE_KHR || PresentResult == VK_SUBOPTIMAL_KHR) {
+        HARU_LOG_WARN(&gLogger, "Present reported out-of-date/suboptimal; recreate swapchain.\n");
+    } else if (PresentResult != VK_SUCCESS) {
+        HARU_LOG_ERROR(&gLogger, "vkQueuePresentKHR failed.\n");
+    }
+
+    Renderer -> CurrentFrame = (Renderer -> CurrentFrame + 1) % 2;
     Renderer -> FrameActive = HARU_FALSE;
 }
 
