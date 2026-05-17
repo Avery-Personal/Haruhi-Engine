@@ -314,20 +314,70 @@ HaruMesh HaruRendererCreateMesh(HaruRenderer *Renderer, const HaruVertex *Vertic
     if (!Renderer || !Vertices || VertexCount <= 0)
         return Mesh;
 
-    if (Renderer -> MeshCount >= 256)
+    if (Renderer -> MeshCount >= 256 || !Renderer -> Device)
         return Mesh;
 
     int Index = Renderer -> MeshCount++;
 
     HaruMeshInternal *Internal = &Renderer -> Meshes[Index];
 
+    memset(Internal, 0, sizeof(*Internal));
+
+    VkDeviceSize BufferSize = sizeof(HaruVertex) * (VkDeviceSize) VertexCount;
+    VkBufferCreateInfo BufferInfo = {0};
+
+    BufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    BufferInfo.size = BufferSize;
+    BufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+    BufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+    if (vkCreateBuffer(Renderer -> Device, &BufferInfo, NULL, &Internal -> VertexBuffer) != VK_SUCCESS) {
+        HARU_LOG_ERROR(&gLogger, "vkCreateBuffer failed for mesh.\n");
+
+        Renderer -> MeshCount--;
+
+        return Mesh;
+    }
+
+    VkMemoryRequirements MemoryRequirements;
+
+    vkGetBufferMemoryRequirements(Renderer -> Device, Internal -> VertexBuffer, &MemoryRequirements);
+
+    VkMemoryAllocateInfo AllocInfo = {0};
+
+    AllocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+    AllocInfo.allocationSize = MemoryRequirements.size;
+    AllocInfo.memoryTypeIndex = HaruRendererFindMemoryType(Renderer, MemoryRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+
+    if (AllocInfo.memoryTypeIndex == UINT32_MAX || vkAllocateMemory(Renderer -> Device, &AllocInfo, NULL, &Internal -> VertexMemory) != VK_SUCCESS) {
+        HARU_LOG_ERROR(&gLogger, "vkAllocateMemory failed for mesh.\n");
+
+        vkDestroyBuffer(Renderer -> Device, Internal -> VertexBuffer, NULL);
+
+        Renderer -> MeshCount--;
+
+        return Mesh;
+    }
+
+    vkBindBufferMemory(Renderer -> Device, Internal -> VertexBuffer, Internal -> VertexMemory, 0);
+
+    void *Mapped = NULL;
+    if (vkMapMemory(Renderer -> Device, Internal -> VertexMemory, 0, BufferSize, 0, &Mapped) == VK_SUCCESS) {
+        memcpy(Mapped, Vertices, (size_t) BufferSize);
+        
+        vkUnmapMemory(Renderer -> Device, Internal -> VertexMemory);
+    } else {
+        HARU_LOG_ERROR(&gLogger, "vkMapMemory failed for mesh.\n");
+        
+        vkFreeMemory(Renderer -> Device, Internal -> VertexMemory, NULL);
+        vkDestroyBuffer(Renderer -> Device, Internal -> VertexBuffer, NULL);
+        
+        Renderer -> MeshCount--;
+        
+        return Mesh;
+    }
+
     Internal -> VertexCount = VertexCount;
-
-    size_t Size = sizeof(HaruVertex) * VertexCount;
-
-    Internal -> VertexBuffer = malloc(Size);
-
-    memcpy(Internal -> VertexBuffer, Vertices, Size);
 
     Mesh.Handle = Index;
 
