@@ -32,7 +32,7 @@
     typedef struct {
         HaruTopology Topology;
         HaruBoolean EnableDepth;
-    } HaruPipelineDesc;
+    } HaruPipelineDescription;
 
     typedef struct {
         int Handle;
@@ -79,8 +79,8 @@
     HaruMesh HaruRendererCreateMesh(HaruRenderer *Renderer, const HaruVertex *Vertices, int VertexCount);
     void HaruRendererDestroyMesh(HaruRenderer *Renderer, HaruMesh Mesh);
 
-    HaruPipeline HaruRendererCreatePipeline(HaruRenderer *Renderer, HaruPipelineDesc Desc);
-
     void HaruRendererDrawMesh(HaruRenderer *Renderer, HaruMesh Mesh, HaruPipeline Pipeline);
+
+    HaruPipeline HaruRendererCreatePipeline(HaruRenderer *Renderer, HaruPipelineDescription Description);
 
 #endif
