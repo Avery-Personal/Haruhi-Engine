@@ -11,6 +11,7 @@
 #include "Core/Engine/Engine.h"
 #include "Core/Application/Application.h"
 #include "Platform/Runtime/Window/Window.h"
+#include "Systems/Rendering/Renderer.h"
 #include "Core/Logging/Logging.h"
 
 HaruEntry HaruMain() {
