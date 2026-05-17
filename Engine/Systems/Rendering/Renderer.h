@@ -106,7 +106,7 @@
         int PipelineCount;
     } HaruRenderer;
 
-    HaruRenderer *HaruRendererCreate(int Width, int Height);
+    HaruRenderer *HaruRendererCreate(HaruWindow *Window);
     void HaruRendererDestroy(HaruRenderer *Renderer);
 
     void HaruRendererBeginFrame(HaruRenderer *Renderer, HaruColor ClearColor);
