@@ -53,3 +53,24 @@ void HaruRendererBeginFrame(HaruRenderer *Renderer, HaruColor ClearColor) {
     glClearColor(ClearColor.R, ClearColor.G, ClearColor.B, ClearColor.A);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
+
+void HaruRendererDrawMesh(HaruRenderer *Renderer, HaruMesh Mesh, HaruPipeline Pipeline) {
+    if (!Renderer || !Renderer -> FrameActive)
+        return;
+
+    if (Mesh.Handle < 0 || Mesh.Handle >= Renderer -> MeshCount)
+        return;
+
+    HaruMeshInternal *Internal = &Renderer -> Meshes[Mesh.Handle];
+    
+    HaruVertex *Vertices = (HaruVertex *) Internal -> VertexBuffer;
+
+    glBegin(GL_TRIANGLES);
+
+    for (int i = 0; i < Internal -> VertexCount; i++) {
+        glColor4f(Vertices[i].Color.R, Vertices[i].Color.G, Vertices[i].Color.B, Vertices[i].Color.A);
+        glVertex2f(Vertices[i].Position.X, Vertices[i].Position.Y);
+    }
+
+    glEnd();
+}
