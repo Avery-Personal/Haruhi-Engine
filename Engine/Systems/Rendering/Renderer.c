@@ -2,13 +2,22 @@
 #include <string.h>
 
 #include "../../Core/Logging/Logging.h"
+#include "../../Platform/Runtime/Window/Window.h"
 #include "Renderer.h"
 
-#if defined(__APPLE__)
-    #include <OpenGL/gl3.h>
-#else
-    #include <GL/gl.h>
-#endif
+u32 HaruRendererFindMemoryType(HaruRenderer *Renderer, u32 TypeFilter, VkMemoryPropertyFlags Properties) {
+    VkPhysicalDeviceMemoryProperties MemoryProperties;
+
+    vkGetPhysicalDeviceMemoryProperties(Renderer -> PhysicalDevice, &MemoryProperties);
+
+    for (u32 i = 0; i < MemoryProperties.memoryTypeCount; i++) {
+        if ((TypeFilter & (1u << i)) && (MemoryProperties.memoryTypes[i].propertyFlags & Properties) == Properties) {
+            return i;
+        }
+    }
+
+    return U32_MAX;
+}
 
 HaruRenderer *HaruRendererCreate(int Width, int Height) {
     HaruRenderer *Renderer = malloc(sizeof(HaruRenderer));
