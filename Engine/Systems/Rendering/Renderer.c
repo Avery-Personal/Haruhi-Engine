@@ -385,22 +385,21 @@ HaruMesh HaruRendererCreateMesh(HaruRenderer *Renderer, const HaruVertex *Vertic
 }
 
 void HaruRendererDrawMesh(HaruRenderer *Renderer, HaruMesh Mesh, HaruPipeline Pipeline) {
-    if (!Renderer || !Renderer -> FrameActive)
-        return;
-
-    if (Mesh.Handle < 0 || Mesh.Handle >= Renderer -> MeshCount)
+    if (!Renderer || Mesh.Handle < 0 || Mesh.Handle >= Renderer -> MeshCount)
         return;
 
     HaruMeshInternal *Internal = &Renderer -> Meshes[Mesh.Handle];
+    if (Internal -> VertexBuffer) {
+        vkDestroyBuffer(Renderer -> Device, Internal -> VertexBuffer, NULL);
 
-    HaruVertex *Vertices = (HaruVertex *) Internal -> VertexBuffer;
-
-    glBegin(GL_TRIANGLES);
-
-    for (int i = 0; i < Internal -> VertexCount; i++) {
-        glColor4f(Vertices[i].Color.R, Vertices[i].Color.G, Vertices[i].Color.B, Vertices[i].Color.A);
-        glVertex2f(Vertices[i].Position.X, Vertices[i].Position.Y);
+        Internal -> VertexBuffer = VK_NULL_HANDLE;
     }
 
-    glEnd();
+    if (Internal -> VertexMemory) {
+        vkFreeMemory(Renderer -> Device, Internal -> VertexMemory, NULL);
+
+        Internal -> VertexMemory = VK_NULL_HANDLE;
+    }
+
+    Internal -> VertexCount = 0;
 }
