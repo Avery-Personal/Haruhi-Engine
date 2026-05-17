@@ -7,8 +7,16 @@
 #ifndef RENDERER_H
 #define RENDERER_H
 
-    #include "../Core/System.h"
+    #include <vulkan/vulkan.h>
 
+    #include "../../Core/System.h"
+
+    typedef enum {
+        HARU_RENDERER_TOPOLOGY_TRIANGLES,
+        HARU_RENDERER_TOPOLOGY_LINES
+    } HaruTopology;
+
+    typedef struct HaruWindow HaruWindow;
     typedef struct HaruRenderer HaruRenderer;
 
     typedef struct {
@@ -17,17 +25,12 @@
 
     typedef struct {
         float X, Y;
-    } HaruVec2;
+    } HaruVector2;
 
     typedef struct {
-        HaruVec2 Position;
+        HaruVector2 Position;
         HaruColor Color;
     } HaruVertex;
-
-    typedef enum {
-        HARU_RENDERER_TOPOLOGY_TRIANGLES,
-        HARU_RENDERER_TOPOLOGY_LINES
-    } HaruTopology;
 
     typedef struct {
         HaruTopology Topology;
@@ -43,25 +46,58 @@
     } HaruPipeline;
 
     typedef struct {
-        void *VertexBuffer; // TO FIND Rendering API
+        VkBuffer VertexBuffer; // TODO: Rendering wrapper API
+        VkDeviceMemory VertexMemory;
         
         int VertexCount;
     } HaruMeshInternal;
 
     typedef struct {
-        void *Pipeline; // TO FIND Rendering API
+        VkPipeline Pipeline;
+        VkPipelineLayout Layout;
     } HaruPipelineInternal;
 
     typedef struct HaruRenderer {
+        HaruWindow *Window;
+
         int Width;
         int Height;
 
         HaruBoolean FrameActive;
 
-        void *PassAction; // TO FIND Rendering API
+        VkInstance Instance;
+        VkSurfaceKHR Surface;
 
-        void *DefaultPipeline; // TO FIND Rendering API
-        void *Bindings; // TO FIND Rendering API
+        VkPhysicalDevice PhysicalDevice;
+        VkDevice Device;
+
+        VkQueue GraphicsQueue;
+        VkQueue PresentQueue;
+        
+        u32 GraphicsQueueFamily;
+        u32 PresentQueueFamily;
+
+        VkSwapchainKHR Swapchain;
+        VkFormat SwapchainImageFormat;
+        VkExtent2D SwapchainExtent;
+
+        VkImage *SwapchainImages;
+        VkImageView *SwapchainImageViews;
+        u32 SwapchainImageCount;
+
+        VkRenderPass RenderPass;
+        VkFramebuffer *Framebuffers;
+
+        VkCommandPool CommandPool;
+        VkCommandBuffer *CommandBuffers;
+
+        VkSemaphore ImageAvailableSemaphores[2];
+        VkSemaphore RenderFinishedSemaphores[2];
+
+        VkFence InFlightFences[2];
+
+        u32 CurrentFrame;
+        u32 CurrentImageIndex;
 
         HaruMeshInternal Meshes[256];
         int MeshCount;
