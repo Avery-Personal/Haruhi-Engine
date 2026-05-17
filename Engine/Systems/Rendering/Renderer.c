@@ -14,7 +14,7 @@ HaruRenderer *HaruRendererCreate(int Width, int Height) {
     HaruRenderer *Renderer = malloc(sizeof(HaruRenderer));
     if (!Renderer) {
         HARU_LOG_ERROR(&gLogger, "Failed to allocate renderer.\n");
-        
+
         return NULL;
     }
 
@@ -35,4 +35,21 @@ void HaruRendererDestroy(HaruRenderer *Renderer) {
         return;
 
     free(Renderer);
+}
+
+void HaruRendererBeginFrame(HaruRenderer *Renderer, HaruColor ClearColor) {
+    if (!Renderer)
+        return;
+
+    if (Renderer -> FrameActive) {
+        HARU_LOG_WARN(&gLogger, "BeginFrame called while frame already active.\n");
+        
+        return;
+    }
+
+    Renderer -> FrameActive = HARU_TRUE;
+
+    glViewport(0, 0, Renderer -> Width, Renderer -> Height);
+    glClearColor(ClearColor.R, ClearColor.G, ClearColor.B, ClearColor.A);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
