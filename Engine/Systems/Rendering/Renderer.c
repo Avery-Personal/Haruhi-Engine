@@ -19,6 +19,43 @@ u32 HaruRendererFindMemoryType(HaruRenderer *Renderer, u32 TypeFilter, VkMemoryP
     return U32_MAX;
 }
 
+void HaruRendererDestroySwapchainObjects(HaruRenderer *Renderer) {
+    if (!Renderer || !Renderer -> Device)
+        return;
+
+    if (Renderer -> Framebuffers) {
+        for (u32 i = 0; i < Renderer -> SwapchainImageCount; i++) {
+            if (Renderer -> Framebuffers[i]) {
+                vkDestroyFramebuffer(Renderer -> Device, Renderer -> Framebuffers[i], NULL);
+            }
+        }
+
+        free(Renderer -> Framebuffers);
+
+        Renderer -> Framebuffers = NULL;
+    }
+
+    if (Renderer -> SwapchainImageViews) {
+        for (u32 i = 0; i < Renderer -> SwapchainImageCount; i++) {
+            if (Renderer -> SwapchainImageViews[i]) {
+                vkDestroyImageView(Renderer -> Device, Renderer -> SwapchainImageViews[i], NULL);
+            }
+        }
+
+        free(Renderer -> SwapchainImageViews);
+
+        Renderer -> SwapchainImageViews = NULL;
+    }
+
+    if (Renderer -> Swapchain) {
+        vkDestroySwapchainKHR(Renderer -> Device, Renderer -> Swapchain, NULL);
+        
+        Renderer -> Swapchain = VK_NULL_HANDLE;
+    }
+
+    Renderer -> SwapchainImageCount = 0;
+}
+
 HaruRenderer *HaruRendererCreate(int Width, int Height) {
     HaruRenderer *Renderer = malloc(sizeof(HaruRenderer));
     if (!Renderer) {
