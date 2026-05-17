@@ -128,13 +128,13 @@ void HaruRendererDestroy(HaruRenderer *Renderer) {
 
         if (Renderer -> CommandBuffers) {
             free(Renderer -> CommandBuffers);
-            
+
             Renderer -> CommandBuffers = NULL;
         }
 
         if (Renderer -> CommandPool) {
             vkDestroyCommandPool(Renderer -> Device, Renderer -> CommandPool, NULL);
-            
+
             Renderer -> CommandPool = VK_NULL_HANDLE;
         }
 
@@ -142,30 +142,30 @@ void HaruRendererDestroy(HaruRenderer *Renderer) {
             if (Renderer -> ImageAvailableSemaphores[i]) {
                 vkDestroySemaphore(Renderer -> Device, Renderer -> ImageAvailableSemaphores[i], NULL);
             }
-            
+
             if (Renderer -> RenderFinishedSemaphores[i]) {
                 vkDestroySemaphore(Renderer -> Device, Renderer -> RenderFinishedSemaphores[i], NULL);
             }
-            
+
             if (Renderer -> InFlightFences[i]) {
                 vkDestroyFence(Renderer -> Device, Renderer -> InFlightFences[i], NULL);
             }
         }
 
         vkDestroyDevice(Renderer -> Device, NULL);
-        
+
         Renderer -> Device = VK_NULL_HANDLE;
     }
 
     if (Renderer -> Surface && Renderer -> Instance) {
         vkDestroySurfaceKHR(Renderer -> Instance, Renderer -> Surface, NULL);
-        
+
         Renderer -> Surface = VK_NULL_HANDLE;
     }
 
     if (Renderer -> Instance) {
         vkDestroyInstance(Renderer -> Instance, NULL);
-        
+
         Renderer -> Instance = VK_NULL_HANDLE;
     }
 
@@ -173,20 +173,82 @@ void HaruRendererDestroy(HaruRenderer *Renderer) {
 }
 
 void HaruRendererBeginFrame(HaruRenderer *Renderer, HaruColor ClearColor) {
-    if (!Renderer)
+    if (!Renderer || Renderer -> FrameActive || !Renderer -> Device || !Renderer -> Swapchain)
         return;
 
-    if (Renderer -> FrameActive) {
-        HARU_LOG_WARN(&gLogger, "BeginFrame called while frame already active.\n");
+    vkWaitForFences(Renderer -> Device, 1, &Renderer -> InFlightFences[Renderer -> CurrentFrame], VK_TRUE, UINT64_MAX);
+
+    VkResult AcquireResult = vkAcquireNextImageKHR(Renderer -> Device, Renderer -> Swapchain, UINT64_MAX, Renderer -> ImageAvailableSemaphores[Renderer -> CurrentFrame], VK_NULL_HANDLE, &Renderer -> CurrentImageIndex);
+
+
+    if (AcquireResult == VK_ERROR_OUT_OF_DATE_KHR) {
+        HARU_LOG_WARN(&gLogger, "Swapchain out of date; recreate swapchain before continuing.\n");
         
         return;
     }
 
-    Renderer -> FrameActive = HARU_TRUE;
+    if (AcquireResult != VK_SUCCESS && AcquireResult != VK_SUBOPTIMAL_KHR) {
+        HARU_LOG_ERROR(&gLogger, "vkAcquireNextImageKHR failed.\n");
+        
+        return;
+    }
 
-    glViewport(0, 0, Renderer -> Width, Renderer -> Height);
-    glClearColor(ClearColor.R, ClearColor.G, ClearColor.B, ClearColor.A);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    vkResetFences(Renderer -> Device, 1, &Renderer -> InFlightFences[Renderer -> CurrentFrame]);
+
+    VkCommandBuffer CommandBuffer = Renderer -> CommandBuffers[Renderer -> CurrentImageIndex];
+
+    vkResetCommandBuffer(CommandBuffer, 0);
+
+    VkCommandBufferBeginInfo BeginInfo = {0};
+
+    BeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+    BeginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+    if (vkBeginCommandBuffer(CommandBuffer, &BeginInfo) != VK_SUCCESS) {
+        HARU_LOG_ERROR(&gLogger, "vkBeginCommandBuffer failed.\n");
+
+        return;
+    }
+
+    VkClearValue ClearValues[1];
+
+    ClearValues[0].color.float32[0] = ClearColor.R;
+    ClearValues[0].color.float32[1] = ClearColor.G;
+    ClearValues[0].color.float32[2] = ClearColor.B;
+    ClearValues[0].color.float32[3] = ClearColor.A;
+
+    VkRenderPassBeginInfo RenderPassInfo = {0};
+
+    RenderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+    RenderPassInfo.renderPass = Renderer -> RenderPass;
+    RenderPassInfo.framebuffer = Renderer -> Framebuffers[Renderer -> CurrentImageIndex];
+    RenderPassInfo.renderArea.offset.x = 0;
+    RenderPassInfo.renderArea.offset.y = 0;
+    RenderPassInfo.renderArea.extent = Renderer -> SwapchainExtent;
+    RenderPassInfo.clearValueCount = 1;
+    RenderPassInfo.pClearValues = ClearValues;
+
+    vkCmdBeginRenderPass(CommandBuffer, &RenderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+    VkViewport Viewport = {0};
+
+    Viewport.x = 0.0f;
+    Viewport.y = 0.0f;
+    Viewport.width = (float)Renderer -> SwapchainExtent.width;
+    Viewport.height = (float)Renderer -> SwapchainExtent.height;
+    Viewport.minDepth = 0.0f;
+    Viewport.maxDepth = 1.0f;
+
+    VkRect2D Scissor = {0};
+
+    Scissor.offset.x = 0;
+    Scissor.offset.y = 0;
+    Scissor.extent = Renderer -> SwapchainExtent;
+
+    vkCmdSetViewport(CommandBuffer, 0, 1, &Viewport);
+    vkCmdSetScissor(CommandBuffer, 0, 1, &Scissor);
+
+    Renderer -> FrameActive = HARU_TRUE;
 }
 
 void HaruRendererEndFrame(HaruRenderer *Renderer) {
