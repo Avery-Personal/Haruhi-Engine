@@ -403,3 +403,24 @@ void HaruRendererDrawMesh(HaruRenderer *Renderer, HaruMesh Mesh, HaruPipeline Pi
 
     Internal -> VertexCount = 0;
 }
+
+HaruPipeline HaruRendererCreatePipeline(HaruRenderer *Renderer, HaruPipelineDescription Description) {
+    HaruPipeline Pipeline = {-1};
+
+    if (!Renderer || !Renderer -> Device)
+        return Pipeline;
+
+    if (Renderer -> PipelineCount >= 64)
+        return Pipeline;
+
+    int Index = Renderer -> PipelineCount++;
+
+    Renderer -> Pipelines[Index].Pipeline = VK_NULL_HANDLE;
+    Renderer -> Pipelines[Index].Layout = VK_NULL_HANDLE;
+
+    Pipeline.Handle = Index;
+
+    (void) Description;
+
+    return Pipeline;
+}
