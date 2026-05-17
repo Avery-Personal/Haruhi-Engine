@@ -22,6 +22,7 @@
     #include "../../Platform/Platform.h"
     #include "../../Platform/Runtime/Window/Window.h"
     #include "../../Platform/Runtime/Timer/Timer.h"
+    #include "../../Systems/Rendering/Renderer.h"
     #include "../Debug/Forth/Forth.h"
     #include "../System.h"
 
@@ -36,6 +37,8 @@
         HaruPlatform Platform;
 
         HaruTimeContext Time;
+
+        HaruRenderer Renderer;
 
         HaruWindow *Windows[MAX_WINDOWS];
         HaruWindow *MainWindow;
