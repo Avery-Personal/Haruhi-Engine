@@ -22,6 +22,8 @@
 #include "../Logging/Logging.h"
 
 void HaruApplicationRun(HaruApplication *Application) {
+    HaruRenderer *Renderer = &Application -> Renderer;
+
     while (Application -> Running && Application -> Engine.Running) {
         HaruTimeUpdate(&Application -> Time);
 
@@ -36,6 +38,9 @@ void HaruApplicationRun(HaruApplication *Application) {
             Application -> Running = 0;
             Application -> Engine.Running = 0;
         }
+
+        HaruRendererBeginFrame(Renderer, (HaruColor){.1f, .45f, .1f, 1.0f});
+        HaruRendererEndFrame(Renderer);
     }
 }
 
