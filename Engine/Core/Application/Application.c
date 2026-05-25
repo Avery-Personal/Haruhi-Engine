@@ -39,8 +39,8 @@ void HaruApplicationRun(HaruApplication *Application) {
             Application -> Engine.Running = 0;
         }
 
-        HaruRendererBeginFrame(Renderer, (HaruColor){.1f, .45f, .1f, 1.0f});
-        HaruRendererEndFrame(Renderer);
+        //HaruRendererBeginFrame(Renderer, (HaruColor){.1f, .45f, .1f, 1.0f});
+        //HaruRendererEndFrame(Renderer);
     }
 }
 
