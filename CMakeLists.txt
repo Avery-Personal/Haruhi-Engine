@@ -8,6 +8,8 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 find_package(glfw3 REQUIRED)
 find_package(SDL3 REQUIRED)
 
+add_subdirectory(Engine/Third-Party/DiligentEngine)
+
 include_directories(
     ${CMAKE_SOURCE_DIR}
     ${CMAKE_SOURCE_DIR}/engine
@@ -46,6 +48,7 @@ target_link_libraries(HaruhiEngine
     PUBLIC
     glfw
     SDL3::SDL3
+    DiligentCore
 )
 
 target_link_libraries(Haruhi
