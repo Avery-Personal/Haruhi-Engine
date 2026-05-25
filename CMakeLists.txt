@@ -10,28 +10,24 @@ find_package(SDL3 REQUIRED)
 
 add_subdirectory(Engine/Third-Party/DiligentEngine)
 
-include_directories(
-    ${CMAKE_SOURCE_DIR}
-    ${CMAKE_SOURCE_DIR}/engine
-)
-
 file(GLOB_RECURSE ALL_ENGINE_SOURCES CONFIGURE_DEPENDS
-    engine/*.c
+    Engine/*.c
 )
 
 list(FILTER ALL_ENGINE_SOURCES EXCLUDE REGEX ".*/Platform/OperatingSystem/.*")
+list(FILTER ALL_ENGINE_SOURCES EXCLUDE REGEX ".*/Third-Party/.*")
 
 if(WIN32)
     set(PLATFORM_SOURCE
-        engine/Platform/OperatingSystem/Windows/PlatformWin.c
+        Engine/Platform/OperatingSystem/Windows/PlatformWin.c
     )
 elseif(APPLE)
     set(PLATFORM_SOURCE
-        engine/Platform/OperatingSystem/MacOS/PlatformMacOS.c
+        Engine/Platform/OperatingSystem/MacOS/PlatformMacOS.c
     )
 elseif(UNIX)
     set(PLATFORM_SOURCE
-        engine/Platform/OperatingSystem/Linux/PlatformLinux.c
+        Engine/Platform/OperatingSystem/Linux/PlatformLinux.c
     )
 endif()
 
@@ -44,11 +40,21 @@ add_executable(Haruhi
     Engine/Haruhi.c
 )
 
+target_include_directories(HaruhiEngine
+    PUBLIC
+    ${CMAKE_SOURCE_DIR}
+    ${CMAKE_SOURCE_DIR}/Engine
+)
+
 target_link_libraries(HaruhiEngine
     PUBLIC
     glfw
     SDL3::SDL3
-    DiligentCore
+
+    Diligent-BuildSettings
+    Diligent-Common
+    Diligent-GraphicsAccessories
+    Diligent-GraphicsEngineOpenGL-static
 )
 
 target_link_libraries(Haruhi
@@ -56,9 +62,10 @@ target_link_libraries(Haruhi
     HaruhiEngine
 )
 
-if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-    target_compile_definitions(Haruhi PRIVATE DEBUG)
-endif()
+target_compile_definitions(Haruhi
+    PRIVATE
+    $<$<CONFIG:Debug>:DEBUG>
+)
 
 set_target_properties(Haruhi PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/build
