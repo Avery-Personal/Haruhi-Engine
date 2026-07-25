@@ -40,6 +40,8 @@ void HaruApplicationRun(HaruApplication *Application) {
         }
 
         if (Renderer) {
+            HaruRendererResize(Renderer, Application -> MainWindow -> FramebufferWidth, Application -> MainWindow -> FramebufferHeight);
+            
             HaruRendererBeginFrame(Renderer, (HaruColor){0.1f, 0.45f, 0.1f, 1.0f});
             HaruRendererEndFrame(Renderer);
         }
