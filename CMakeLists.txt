@@ -8,7 +8,7 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 find_package(glfw3 REQUIRED)
 find_package(SDL3 REQUIRED)
 
-add_subdirectory(Engine/Third-Party/DiligentEngine)
+#add_subdirectory(Engine/Third-Party/DiligentEngine)
 
 file(GLOB_RECURSE ALL_ENGINE_SOURCES CONFIGURE_DEPENDS
     Engine/*.c
@@ -51,10 +51,13 @@ target_link_libraries(HaruhiEngine
     glfw
     SDL3::SDL3
 
-    Diligent-BuildSettings
-    Diligent-Common
-    Diligent-GraphicsAccessories
-    Diligent-GraphicsEngineOpenGL-static
+    #Diligent-BuildSettings
+    #Diligent-Common
+    #Diligent-GraphicsAccessories
+    #Diligent-GraphicsEngine
+    
+    #Diligent-GraphicsEngineOpenGL-static
+    #Diligent-GraphicsEngineVk-static
 )
 
 target_link_libraries(Haruhi
