@@ -38,7 +38,7 @@
 
         HaruTimeContext Time;
 
-        HaruRenderer Renderer;
+        HaruRenderer *Renderer;
 
         HaruWindow *Windows[MAX_WINDOWS];
         HaruWindow *MainWindow;
