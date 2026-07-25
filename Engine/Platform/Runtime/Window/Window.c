@@ -47,7 +47,17 @@ HaruResult HaruInitializeWindowing() {
             return HARU_RESULT_ERROR;
         }
 
-        glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+        //glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+
+        glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
+
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
+        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+        #ifdef __APPLE__
+            glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
+        #endif
 
         WindowingInitialized = 1;
 
@@ -116,6 +126,9 @@ HaruWindow *HaruCreateWindow(const char *Title, int WIDTH, int HEIGHT) {
 
                 THROW(Exception, 34);
             }
+
+            glfwMakeContextCurrent(GLFWHandle);
+            glfwSwapInterval(1);
 
             *WINDOW = (HaruWindow){0};
 
