@@ -1,116 +1,55 @@
+//
+//  Haruhi Engine
+//
+//  Copyright © 2026 AveriC & Averi
+//
+
+#define SOKOL_GFX_IMPL
+#define SOKOL_GLCORE
+//#define SOKOL_GLUE_IMPL
+
 #include <stdlib.h>
 #include <string.h>
 
-#include "../../Core/Logging/Logging.h"
-#include "../../Platform/Runtime/Window/Window.h"
 #include "Renderer.h"
+#include "../../Platform/Runtime/Window/Window.h"
 
-u32 HaruRendererFindMemoryType(HaruRenderer *Renderer, u32 TypeFilter, VkMemoryPropertyFlags Properties) {
-    VkPhysicalDeviceMemoryProperties MemoryProperties;
+static const char *DefaultVSSource =
+    "#version 410\n"
+    "layout(location=0) in vec2 Position;\n"
+    "layout(location=1) in vec4 Color;\n"
+    "out vec4 FragmentColor;\n"
+    "void main() {\n"
+    "  gl_Position = vec4(Position, 0.5, 1.0);\n"
+    "  FragmentColor = Color;\n"
+    "}\n";
 
-    vkGetPhysicalDeviceMemoryProperties(Renderer -> PhysicalDevice, &MemoryProperties);
-
-    for (u32 i = 0; i < MemoryProperties.memoryTypeCount; i++) {
-        if ((TypeFilter & (1u << i)) && (MemoryProperties.memoryTypes[i].propertyFlags & Properties) == Properties) {
-            return i;
-        }
-    }
-
-    return U32_MAX;
-}
-
-void HaruRendererDestroySwapchainObjects(HaruRenderer *Renderer) {
-    if (!Renderer || !Renderer -> Device)
-        return;
-
-    if (Renderer -> Framebuffers) {
-        for (u32 i = 0; i < Renderer -> SwapchainImageCount; i++) {
-            if (Renderer -> Framebuffers[i]) {
-                vkDestroyFramebuffer(Renderer -> Device, Renderer -> Framebuffers[i], NULL);
-            }
-        }
-
-        free(Renderer -> Framebuffers);
-
-        Renderer -> Framebuffers = NULL;
-    }
-
-    if (Renderer -> SwapchainImageViews) {
-        for (u32 i = 0; i < Renderer -> SwapchainImageCount; i++) {
-            if (Renderer -> SwapchainImageViews[i]) {
-                vkDestroyImageView(Renderer -> Device, Renderer -> SwapchainImageViews[i], NULL);
-            }
-        }
-
-        free(Renderer -> SwapchainImageViews);
-
-        Renderer -> SwapchainImageViews = NULL;
-    }
-
-    if (Renderer -> Swapchain) {
-        vkDestroySwapchainKHR(Renderer -> Device, Renderer -> Swapchain, NULL);
-
-        Renderer -> Swapchain = VK_NULL_HANDLE;
-    }
-
-    Renderer -> SwapchainImageCount = 0;
-}
-
-void HaruRendererDestroyPipelines(HaruRenderer *Renderer) {
-    if (!Renderer || !Renderer -> Device)
-        return;
-
-    for (int i = 0; i < Renderer -> PipelineCount; i++) {
-        if (Renderer -> Pipelines[i].Pipeline) {
-            vkDestroyPipeline(Renderer -> Device, Renderer -> Pipelines[i].Pipeline, NULL);
-        }
-
-        if (Renderer -> Pipelines[i].Layout) {
-            vkDestroyPipelineLayout(Renderer -> Device, Renderer -> Pipelines[i].Layout, NULL);
-        }
-    }
-
-    Renderer -> PipelineCount = 0;
-}
-
-void HaruRendererDestroyMeshes(HaruRenderer *Renderer) {
-    if (!Renderer || !Renderer -> Device)
-        return;
-
-    for (int i = 0; i < Renderer -> MeshCount; i++) {
-        if (Renderer -> Meshes[i].VertexBuffer) {
-            vkDestroyBuffer(Renderer -> Device, Renderer -> Meshes[i].VertexBuffer, NULL);
-        }
-
-        if (Renderer -> Meshes[i].VertexMemory) {
-            vkFreeMemory(Renderer -> Device, Renderer -> Meshes[i].VertexMemory, NULL);
-        }
-    }
-
-    Renderer -> MeshCount = 0;
-}
+static const char *DefaultFSSource =
+    "#version 410\n"
+    "in vec4 FragmentColor;\n"
+    "out vec4 OutputColor;\n"
+    "void main() {\n"
+    "  OutputColor = FragmentColor;\n"
+    "}\n";
 
 HaruRenderer *HaruRendererCreate(HaruWindow *Window) {
-    HaruRenderer *Renderer = malloc(sizeof(HaruRenderer));
-    if (!Renderer) {
-        HARU_LOG_ERROR(&gLogger, "Failed to allocate renderer.\n");
-
+    if (!Window)
         return NULL;
-    }
+
+    HaruRenderer *Renderer = (HaruRenderer *) malloc(sizeof(HaruRenderer));
+
+    if (!Renderer)
+        return NULL;
 
     memset(Renderer, 0, sizeof(HaruRenderer));
 
     Renderer -> Window = Window;
+    Renderer -> Width = Window -> WIDTH;
+    Renderer -> Height = Window -> HEIGHT;
 
-    if (Window) {
-        Renderer -> Width = Window -> WIDTH;
-        Renderer -> Height = Window -> HEIGHT;
-    }
+    sg_desc Description = {0};
 
-    Renderer -> FrameActive = HARU_FALSE;
-
-    Renderer -> CurrentFrame = 0;
-    Renderer -> CurrentImageIndex = 0;
+    sg_setup(&Description);
 
     return Renderer;
 }
@@ -119,308 +58,173 @@ void HaruRendererDestroy(HaruRenderer *Renderer) {
     if (!Renderer)
         return;
 
-    if (Renderer -> Device) {
-        vkDeviceWaitIdle(Renderer -> Device);
-
-        HaruRendererDestroyMeshes(Renderer);
-        HaruRendererDestroyPipelines(Renderer);
-        HaruRendererDestroySwapchainObjects(Renderer);
-
-        if (Renderer -> CommandBuffers) {
-            free(Renderer -> CommandBuffers);
-
-            Renderer -> CommandBuffers = NULL;
-        }
-
-        if (Renderer -> CommandPool) {
-            vkDestroyCommandPool(Renderer -> Device, Renderer -> CommandPool, NULL);
-
-            Renderer -> CommandPool = VK_NULL_HANDLE;
-        }
-
-        for (int i = 0; i < 2; i++) {
-            if (Renderer -> ImageAvailableSemaphores[i]) {
-                vkDestroySemaphore(Renderer -> Device, Renderer -> ImageAvailableSemaphores[i], NULL);
-            }
-
-            if (Renderer -> RenderFinishedSemaphores[i]) {
-                vkDestroySemaphore(Renderer -> Device, Renderer -> RenderFinishedSemaphores[i], NULL);
-            }
-
-            if (Renderer -> InFlightFences[i]) {
-                vkDestroyFence(Renderer -> Device, Renderer -> InFlightFences[i], NULL);
-            }
-        }
-
-        vkDestroyDevice(Renderer -> Device, NULL);
-
-        Renderer -> Device = VK_NULL_HANDLE;
+    for (int i = 0; i < Renderer -> MeshCount; i++) {
+        HaruRendererDestroyMesh(Renderer, (HaruMesh){i});
     }
 
-    if (Renderer -> Surface && Renderer -> Instance) {
-        vkDestroySurfaceKHR(Renderer -> Instance, Renderer -> Surface, NULL);
-
-        Renderer -> Surface = VK_NULL_HANDLE;
+    for (int i = 0; i < Renderer -> PipelineCount; i++) {
+        HaruRendererDestroyPipeline(Renderer, (HaruPipeline){i});
     }
 
-    if (Renderer -> Instance) {
-        vkDestroyInstance(Renderer -> Instance, NULL);
-
-        Renderer -> Instance = VK_NULL_HANDLE;
-    }
+    sg_shutdown();
 
     free(Renderer);
 }
 
+void HaruRendererResize(HaruRenderer *Renderer, int Width, int Height) {
+    if (!Renderer)
+        return;
+
+    Renderer -> Width = Width;
+    Renderer -> Height = Height;
+}
+
 void HaruRendererBeginFrame(HaruRenderer *Renderer, HaruColor ClearColor) {
-    if (!Renderer || Renderer -> FrameActive || !Renderer -> Device || !Renderer -> Swapchain)
+    if (!Renderer)
         return;
 
-    vkWaitForFences(Renderer -> Device, 1, &Renderer -> InFlightFences[Renderer -> CurrentFrame], VK_TRUE, UINT64_MAX);
+    Renderer -> FrameActive = 1;
 
-    VkResult AcquireResult = vkAcquireNextImageKHR(Renderer -> Device, Renderer -> Swapchain, UINT64_MAX, Renderer -> ImageAvailableSemaphores[Renderer -> CurrentFrame], VK_NULL_HANDLE, &Renderer -> CurrentImageIndex);
+    sg_pass Pass = {0};
 
+    Pass.action.colors[0].load_action = SG_LOADACTION_CLEAR;
+    Pass.action.colors[0].clear_value = (sg_color) { ClearColor.R, ClearColor.G, ClearColor.B, ClearColor.A };
+    
+    Pass.swapchain.width = Renderer -> Width;
+    Pass.swapchain.height = Renderer -> Height;
+    Pass.swapchain.color_format = SG_PIXELFORMAT_RGBA8;
+    Pass.swapchain.gl.framebuffer = 0;
 
-    if (AcquireResult == VK_ERROR_OUT_OF_DATE_KHR) {
-        HARU_LOG_WARN(&gLogger, "Swapchain out of date; recreate swapchain before continuing.\n");
-
-        return;
-    }
-
-    if (AcquireResult != VK_SUCCESS && AcquireResult != VK_SUBOPTIMAL_KHR) {
-        HARU_LOG_ERROR(&gLogger, "vkAcquireNextImageKHR failed.\n");
-
-        return;
-    }
-
-    vkResetFences(Renderer -> Device, 1, &Renderer -> InFlightFences[Renderer -> CurrentFrame]);
-
-    VkCommandBuffer CommandBuffer = Renderer -> CommandBuffers[Renderer -> CurrentImageIndex];
-
-    vkResetCommandBuffer(CommandBuffer, 0);
-
-    VkCommandBufferBeginInfo BeginInfo = {0};
-
-    BeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-    BeginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-
-    if (vkBeginCommandBuffer(CommandBuffer, &BeginInfo) != VK_SUCCESS) {
-        HARU_LOG_ERROR(&gLogger, "vkBeginCommandBuffer failed.\n");
-
-        return;
-    }
-
-    VkClearValue ClearValues[1];
-
-    ClearValues[0].color.float32[0] = ClearColor.R;
-    ClearValues[0].color.float32[1] = ClearColor.G;
-    ClearValues[0].color.float32[2] = ClearColor.B;
-    ClearValues[0].color.float32[3] = ClearColor.A;
-
-    VkRenderPassBeginInfo RenderPassInfo = {0};
-
-    RenderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-    RenderPassInfo.renderPass = Renderer -> RenderPass;
-    RenderPassInfo.framebuffer = Renderer -> Framebuffers[Renderer -> CurrentImageIndex];
-    RenderPassInfo.renderArea.offset.x = 0;
-    RenderPassInfo.renderArea.offset.y = 0;
-    RenderPassInfo.renderArea.extent = Renderer -> SwapchainExtent;
-    RenderPassInfo.clearValueCount = 1;
-    RenderPassInfo.pClearValues = ClearValues;
-
-    vkCmdBeginRenderPass(CommandBuffer, &RenderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-
-    VkViewport Viewport = {0};
-
-    Viewport.x = 0.0f;
-    Viewport.y = 0.0f;
-    Viewport.width = (float)Renderer -> SwapchainExtent.width;
-    Viewport.height = (float)Renderer -> SwapchainExtent.height;
-    Viewport.minDepth = 0.0f;
-    Viewport.maxDepth = 1.0f;
-
-    VkRect2D Scissor = {0};
-
-    Scissor.offset.x = 0;
-    Scissor.offset.y = 0;
-    Scissor.extent = Renderer -> SwapchainExtent;
-
-    vkCmdSetViewport(CommandBuffer, 0, 1, &Viewport);
-    vkCmdSetScissor(CommandBuffer, 0, 1, &Scissor);
-
-    Renderer -> FrameActive = HARU_TRUE;
+    sg_begin_pass(&Pass);
 }
 
 void HaruRendererEndFrame(HaruRenderer *Renderer) {
-    if (!Renderer || !Renderer -> FrameActive)
+    if (!Renderer)
         return;
 
-    VkCommandBuffer CommandBuffer = Renderer -> CommandBuffers[Renderer -> CurrentImageIndex];
+    sg_end_pass();
+    sg_commit();
 
-    vkCmdEndRenderPass(CommandBuffer);
+    glfwSwapBuffers(Renderer -> Window -> Handle);
 
-    if (vkEndCommandBuffer(CommandBuffer) != VK_SUCCESS) {
-        HARU_LOG_ERROR(&gLogger, "vkEndCommandBuffer failed.\n");
+    Renderer -> FrameActive = 0;
+}
 
-        Renderer -> FrameActive = HARU_FALSE;
-
-        return;
-    }
-
-    VkPipelineStageFlags WaitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
-
-    VkSubmitInfo SubmitInfo = {0};
-
-    SubmitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-    SubmitInfo.waitSemaphoreCount = 1;
-    SubmitInfo.pWaitSemaphores = &Renderer -> ImageAvailableSemaphores[Renderer -> CurrentFrame];
-    SubmitInfo.pWaitDstStageMask = WaitStages;
-    SubmitInfo.commandBufferCount = 1;
-    SubmitInfo.pCommandBuffers = &CommandBuffer;
-    SubmitInfo.signalSemaphoreCount = 1;
-    SubmitInfo.pSignalSemaphores = &Renderer -> RenderFinishedSemaphores[Renderer -> CurrentFrame];
-
-    if (vkQueueSubmit(Renderer -> GraphicsQueue, 1, &SubmitInfo, Renderer -> InFlightFences[Renderer -> CurrentFrame]) != VK_SUCCESS) {
-        HARU_LOG_ERROR(&gLogger, "vkQueueSubmit failed.\n");
-        
-        Renderer -> FrameActive = HARU_FALSE;
-        
-        return;
-    }
-
-    VkPresentInfoKHR PresentInfo = {0};
-
-    PresentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-    PresentInfo.waitSemaphoreCount = 1;
-    PresentInfo.pWaitSemaphores = &Renderer -> RenderFinishedSemaphores[Renderer -> CurrentFrame];
-    PresentInfo.swapchainCount = 1;
-    PresentInfo.pSwapchains = &Renderer -> Swapchain;
-    PresentInfo.pImageIndices = &Renderer -> CurrentImageIndex;
-
-    VkResult PresentResult = vkQueuePresentKHR(Renderer -> PresentQueue, &PresentInfo);
-    if (PresentResult == VK_ERROR_OUT_OF_DATE_KHR || PresentResult == VK_SUBOPTIMAL_KHR) {
-        HARU_LOG_WARN(&gLogger, "Present reported out-of-date/suboptimal; recreate swapchain.\n");
-    } else if (PresentResult != VK_SUCCESS) {
-        HARU_LOG_ERROR(&gLogger, "vkQueuePresentKHR failed.\n");
-    }
-
-    Renderer -> CurrentFrame = (Renderer -> CurrentFrame + 1) % 2;
-    Renderer -> FrameActive = HARU_FALSE;
+void HaruRendererWaitIdle(HaruRenderer *Renderer) {
+    (void) Renderer;
 }
 
 HaruMesh HaruRendererCreateMesh(HaruRenderer *Renderer, const HaruVertex *Vertices, int VertexCount) {
-    HaruMesh Mesh = {-1};
-
     if (!Renderer || !Vertices || VertexCount <= 0)
-        return Mesh;
+        return (HaruMesh) {-1};
 
-    if (Renderer -> MeshCount >= 256 || !Renderer -> Device)
-        return Mesh;
+    if (Renderer -> MeshCount >= 256)
+        return (HaruMesh) {-1};
 
-    int Index = Renderer -> MeshCount++;
+    sg_buffer_desc BufferDescription = {0};
 
-    HaruMeshInternal *Internal = &Renderer -> Meshes[Index];
+    BufferDescription.data.ptr = Vertices;
+    BufferDescription.data.size = (size_t) VertexCount * sizeof(HaruVertex);
 
-    memset(Internal, 0, sizeof(*Internal));
+    sg_buffer VertexBuffer = sg_make_buffer(&BufferDescription);
 
-    VkDeviceSize BufferSize = sizeof(HaruVertex) * (VkDeviceSize) VertexCount;
-    VkBufferCreateInfo BufferInfo = {0};
+    int id = Renderer -> MeshCount++;
 
-    BufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-    BufferInfo.size = BufferSize;
-    BufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
-    BufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+    HaruMeshInternal *InternalMesh = &Renderer -> Meshes[id];
 
-    if (vkCreateBuffer(Renderer -> Device, &BufferInfo, NULL, &Internal -> VertexBuffer) != VK_SUCCESS) {
-        HARU_LOG_ERROR(&gLogger, "vkCreateBuffer failed for mesh.\n");
+    InternalMesh -> VertexBuffer = (sg_buffer *) malloc(sizeof(sg_buffer));
+    *InternalMesh -> VertexBuffer = VertexBuffer;
+    InternalMesh -> VertexCount = VertexCount;
 
-        Renderer -> MeshCount--;
-
-        return Mesh;
-    }
-
-    VkMemoryRequirements MemoryRequirements;
-
-    vkGetBufferMemoryRequirements(Renderer -> Device, Internal -> VertexBuffer, &MemoryRequirements);
-
-    VkMemoryAllocateInfo AllocInfo = {0};
-
-    AllocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-    AllocInfo.allocationSize = MemoryRequirements.size;
-    AllocInfo.memoryTypeIndex = HaruRendererFindMemoryType(Renderer, MemoryRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-
-    if (AllocInfo.memoryTypeIndex == UINT32_MAX || vkAllocateMemory(Renderer -> Device, &AllocInfo, NULL, &Internal -> VertexMemory) != VK_SUCCESS) {
-        HARU_LOG_ERROR(&gLogger, "vkAllocateMemory failed for mesh.\n");
-
-        vkDestroyBuffer(Renderer -> Device, Internal -> VertexBuffer, NULL);
-
-        Renderer -> MeshCount--;
-
-        return Mesh;
-    }
-
-    vkBindBufferMemory(Renderer -> Device, Internal -> VertexBuffer, Internal -> VertexMemory, 0);
-
-    void *Mapped = NULL;
-    if (vkMapMemory(Renderer -> Device, Internal -> VertexMemory, 0, BufferSize, 0, &Mapped) == VK_SUCCESS) {
-        memcpy(Mapped, Vertices, (size_t) BufferSize);
-        
-        vkUnmapMemory(Renderer -> Device, Internal -> VertexMemory);
-    } else {
-        HARU_LOG_ERROR(&gLogger, "vkMapMemory failed for mesh.\n");
-        
-        vkFreeMemory(Renderer -> Device, Internal -> VertexMemory, NULL);
-        vkDestroyBuffer(Renderer -> Device, Internal -> VertexBuffer, NULL);
-        
-        Renderer -> MeshCount--;
-        
-        return Mesh;
-    }
-
-    Internal -> VertexCount = VertexCount;
-
-    Mesh.Handle = Index;
-
-    return Mesh;
+    return (HaruMesh){ .ID = id };
 }
 
-void HaruRendererDrawMesh(HaruRenderer *Renderer, HaruMesh Mesh, HaruPipeline Pipeline) {
-    if (!Renderer || Mesh.Handle < 0 || Mesh.Handle >= Renderer -> MeshCount)
+void HaruRendererDestroyMesh(HaruRenderer *Renderer, HaruMesh Mesh) {
+    if (!Renderer || Mesh.ID < 0 || Mesh.ID >= Renderer -> MeshCount)
         return;
+    
+    HaruMeshInternal *InternalMesh = &Renderer -> Meshes[Mesh.ID];
+    if (InternalMesh -> VertexBuffer) {
+        sg_destroy_buffer(*InternalMesh -> VertexBuffer);
 
-    HaruMeshInternal *Internal = &Renderer -> Meshes[Mesh.Handle];
-    if (Internal -> VertexBuffer) {
-        vkDestroyBuffer(Renderer -> Device, Internal -> VertexBuffer, NULL);
+        free(InternalMesh -> VertexBuffer);
 
-        Internal -> VertexBuffer = VK_NULL_HANDLE;
+        InternalMesh -> VertexBuffer = NULL;
     }
 
-    if (Internal -> VertexMemory) {
-        vkFreeMemory(Renderer -> Device, Internal -> VertexMemory, NULL);
-
-        Internal -> VertexMemory = VK_NULL_HANDLE;
-    }
-
-    Internal -> VertexCount = 0;
+    InternalMesh -> VertexCount = 0;
 }
 
 HaruPipeline HaruRendererCreatePipeline(HaruRenderer *Renderer, HaruPipelineDescription Description) {
-    HaruPipeline Pipeline = {-1};
+    if (!Renderer || Renderer -> PipelineCount >= 64)
+        return (HaruPipeline){-1};
 
-    if (!Renderer || !Renderer -> Device)
-        return Pipeline;
+    sg_shader_desc ShaderDescription = {0};
 
-    if (Renderer -> PipelineCount >= 64)
-        return Pipeline;
+    ShaderDescription.vertex_func.source = DefaultVSSource;
+    ShaderDescription.fragment_func.source = DefaultFSSource;
+    
+    sg_shader Shader = sg_make_shader(&ShaderDescription);
+    sg_pipeline_desc PipelineDescription = {0};
 
-    int Index = Renderer -> PipelineCount++;
+    PipelineDescription.shader = Shader;
+    
+    PipelineDescription.layout.attrs[0].format = SG_VERTEXFORMAT_FLOAT2;
+    PipelineDescription.layout.attrs[1].format = SG_VERTEXFORMAT_FLOAT4;
+    
+    PipelineDescription.primitive_type = (Description.Topology == HARU_RENDERER_TOPOLOGY_LINES)  ? SG_PRIMITIVETYPE_LINES  : SG_PRIMITIVETYPE_TRIANGLES;
+    PipelineDescription.depth.compare = Description.EnableDepth ? SG_COMPAREFUNC_LESS_EQUAL : SG_COMPAREFUNC_ALWAYS;
+    PipelineDescription.depth.write_enabled = Description.EnableDepth;
 
-    Renderer -> Pipelines[Index].Pipeline = VK_NULL_HANDLE;
-    Renderer -> Pipelines[Index].Layout = VK_NULL_HANDLE;
+    sg_pipeline Pipeline = sg_make_pipeline(&PipelineDescription);
 
-    Pipeline.Handle = Index;
+    int id = Renderer -> PipelineCount++;
 
-    (void) Description;
+    HaruPipelineInternal *InternalPipeline = &Renderer -> Pipelines[id];
+    
+    InternalPipeline -> Pipeline = (sg_pipeline *) malloc(sizeof(sg_pipeline));
+    *InternalPipeline -> Pipeline = Pipeline;
 
-    return Pipeline;
+    return (HaruPipeline){ .ID = id };
+}
+
+void HaruRendererDestroyPipeline(HaruRenderer *Renderer, HaruPipeline Pipeline) {
+    if (!Renderer || Pipeline.ID < 0 || Pipeline.ID >= Renderer -> PipelineCount)
+        return;
+    
+    HaruPipelineInternal *InternalPipeline = &Renderer -> Pipelines[Pipeline.ID];
+    if (InternalPipeline -> Pipeline) {
+        sg_destroy_pipeline(*InternalPipeline -> Pipeline);
+
+        free(InternalPipeline -> Pipeline);
+
+        InternalPipeline -> Pipeline = NULL;
+    }
+}
+
+void HaruRendererDrawMesh(HaruRenderer *Renderer, HaruMesh Mesh, HaruPipeline Pipeline) {
+    if (!Renderer || !Renderer -> FrameActive)
+        return;
+
+    if (Mesh.ID < 0 || Mesh.ID >= Renderer -> MeshCount)
+        return;
+
+    if (Pipeline.ID < 0 || Pipeline.ID >= Renderer -> PipelineCount)
+        return;
+        
+    HaruMeshInternal *InternalMesh = &Renderer -> Meshes[Mesh.ID];
+    HaruPipelineInternal *InternalPipeline = &Renderer -> Pipelines[Pipeline.ID];
+
+    if (!InternalMesh -> VertexBuffer || !InternalPipeline -> Pipeline)
+        return;
+
+    sg_apply_pipeline(*InternalPipeline -> Pipeline);
+
+    sg_bindings Binding = {0};
+    
+    Binding.vertex_buffers[0] = *InternalMesh -> VertexBuffer;
+
+    sg_apply_bindings(&Binding);
+
+    sg_draw(0, InternalMesh -> VertexCount, 1);
 }
