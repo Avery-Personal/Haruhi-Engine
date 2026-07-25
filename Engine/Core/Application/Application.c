@@ -22,7 +22,7 @@
 #include "../Logging/Logging.h"
 
 void HaruApplicationRun(HaruApplication *Application) {
-    HaruRenderer *Renderer = &Application -> Renderer;
+    HaruRenderer *Renderer = Application -> Renderer;
 
     while (Application -> Running && Application -> Engine.Running) {
         HaruTimeUpdate(&Application -> Time);
@@ -39,8 +39,10 @@ void HaruApplicationRun(HaruApplication *Application) {
             Application -> Engine.Running = 0;
         }
 
-        //HaruRendererBeginFrame(Renderer, (HaruColor){.1f, .45f, .1f, 1.0f});
-        //HaruRendererEndFrame(Renderer);
+        if (Renderer) {
+            HaruRendererBeginFrame(Renderer, (HaruColor){0.1f, 0.45f, 0.1f, 1.0f});
+            HaruRendererEndFrame(Renderer);
+        }
     }
 }
 
@@ -56,8 +58,11 @@ HaruWindow *HaruApplicationCreateWindow(HaruApplication *Application, const char
 
     Application -> Windows[Application -> WindowCount++] = Window;
 
-    if (!Application -> MainWindow)
+    if (!Application -> MainWindow) {
         Application -> MainWindow = Window;
+
+        Application -> Renderer = HaruRendererCreate(Window);
+    }
 
     return Window;
 }
@@ -127,4 +132,10 @@ HaruResult HaruApplicationCreate(HaruApplicationCreateInfo *ApplicationCreateInf
 
 void HaruApplicationShutdown(HaruApplication *Application) {
     Application -> Running = 0;
+    
+    if (Application -> Renderer) {
+        HaruRendererDestroy(Application -> Renderer);
+        
+        Application -> Renderer = NULL;
+    }
 }
