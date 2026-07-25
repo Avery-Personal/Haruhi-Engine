@@ -60,6 +60,16 @@ target_link_libraries(HaruhiEngine
     #Diligent-GraphicsEngineVk-static
 )
 
+if(APPLE)
+    target_link_libraries(HaruhiEngine
+        PUBLIC
+        "-framework OpenGL"
+        "-framework Cocoa"
+        "-framework IOKit"
+        "-framework CoreVideo"
+    )
+endif()
+
 target_link_libraries(Haruhi
     PRIVATE
     HaruhiEngine
