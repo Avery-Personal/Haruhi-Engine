@@ -6,10 +6,12 @@
 
 #define SOKOL_GFX_IMPL
 #define SOKOL_GLCORE
-//#define SOKOL_GLUE_IMPL
+#define SOKOL_GLUE_IMPL
 
 #include <stdlib.h>
 #include <string.h>
+
+#include <OpenGL/gl3.h>
 
 #include "Renderer.h"
 #include "../../Platform/Runtime/Window/Window.h"
@@ -20,7 +22,7 @@ static const char *DefaultVSSource =
     "layout(location=1) in vec4 Color;\n"
     "out vec4 FragmentColor;\n"
     "void main() {\n"
-    "  gl_Position = vec4(Position, 0.5, 1.0);\n"
+    "  gl_Position = vec4(Position, 1.0, 1.0);\n"
     "  FragmentColor = Color;\n"
     "}\n";
 
@@ -44,8 +46,8 @@ HaruRenderer *HaruRendererCreate(HaruWindow *Window) {
     memset(Renderer, 0, sizeof(HaruRenderer));
 
     Renderer -> Window = Window;
-    Renderer -> Width = Window -> WIDTH;
-    Renderer -> Height = Window -> HEIGHT;
+    Renderer -> Width = Window -> FramebufferWidth;
+    Renderer -> Height = Window -> FramebufferHeight;
 
     sg_desc Description = {0};
 
@@ -82,6 +84,8 @@ void HaruRendererResize(HaruRenderer *Renderer, int Width, int Height) {
 void HaruRendererBeginFrame(HaruRenderer *Renderer, HaruColor ClearColor) {
     if (!Renderer)
         return;
+
+    glViewport(0, 0, Renderer -> Width, Renderer -> Height);
 
     Renderer -> FrameActive = 1;
 
