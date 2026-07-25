@@ -18,6 +18,7 @@
 #include "Window.h"
 #include "../../Platform.h"
 #include "../../../Core/Logging/Logging.h"
+#include "../../../Third-Party/sokol_gfx.h"
 
 HaruWindowBackend gWindowBackend = HARU_WINDOW_BACKEND_NONE;
 
@@ -141,6 +142,7 @@ HaruWindow *HaruCreateWindow(const char *Title, int WIDTH, int HEIGHT) {
             WINDOW -> ShouldClose = 0;
             WINDOW -> Backend = HARU_WINDOW_BACKEND_GLFW;
 
+            glfwGetFramebufferSize(GLFWHandle, &WINDOW -> FramebufferWidth, &WINDOW -> FramebufferHeight);
             glfwSetWindowUserPointer(GLFWHandle, WINDOW);
 
             HaruInputBindWindow(WINDOW);
@@ -204,6 +206,8 @@ void HaruWindowPollEvents(HaruWindow *WINDOW) {
         if (glfwWindowShouldClose((GLFWwindow *) WINDOW -> Handle)) {
             WINDOW -> ShouldClose = 1;
         }
+
+        glfwGetFramebufferSize((GLFWwindow *) WINDOW -> Handle, &WINDOW -> FramebufferWidth, &WINDOW -> FramebufferHeight);
     }
 }
 
