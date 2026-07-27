@@ -26,6 +26,10 @@ static HaruMesh gTestMesh;
 static HaruPipeline gTestPipeline;
 static HaruBoolean gSceneInitialized = HARU_FALSE;
 
+static float RandomFloat(float Minimum, float Maximum) {
+    return Minimum + ((float) rand() / (float) RAND_MAX) * (Maximum - Minimum);
+}
+
 void InitializeSceneTest(HaruApplication *Application) {
     if (gSceneInitialized || !Application -> Renderer)
         return;
@@ -47,7 +51,9 @@ void InitializeSceneTest(HaruApplication *Application) {
 
     gTestPipeline = HaruRendererCreatePipeline(Application -> Renderer, PipelineDescription);
 
-    HaruSceneSpawnEntity(&gMainScene, gTestMesh, gTestPipeline, 0.0f, 0.0f, 0.0f, 1.0f);
+    HaruColor White = {1.0f, 1.0f, 1.0f, 1.0f};
+
+    HaruSceneSpawnEntity(&gMainScene, gTestMesh, gTestPipeline, 0.0f, 0.0f, 0.0f, 1.0f, White);
 
     gSceneInitialized = HARU_TRUE;
 }
@@ -75,11 +81,19 @@ void HaruApplicationRun(HaruApplication *Application) {
         HaruTimeUpdate(&Application -> Time);
 
         if (HaruInputKeyPressed(&Application -> Platform, GLFW_KEY_J)) {
-            float RandomX = ((float) rand() / (float) RAND_MAX) * 1.6f - 0.8f;
-            float RandomY = ((float) rand() / (float) RAND_MAX) * 1.6f - 0.8f;
+            float RandomX = RandomFloat(-0.8f, 0.8f);
+            float RandomY = RandomFloat(-0.8f, 0.8f);
+            float RandomScale = RandomFloat(0.05f, 0.4f);
 
-            if (HaruSceneSpawnEntity(&gMainScene, gTestMesh, gTestPipeline, RandomX, RandomY, 0.0f, 1.0f)) {
-                HARU_LOG_INFO(&gLogger, "Spawned entity at (%.2f, %.2f)\n", RandomX, RandomY);
+            HaruColor RandomColor = {
+                .R = RandomFloat(0.2f, 1.0f),
+                .G = RandomFloat(0.2f, 1.0f),
+                .B = RandomFloat(0.2f, 1.0f),
+                .A = 1.0f
+            };
+
+            if (HaruSceneSpawnEntity(&gMainScene, gTestMesh, gTestPipeline, RandomX, RandomY, 0.0f, RandomScale, RandomColor)) {
+                HARU_LOG_INFO(&gLogger, "Spawned entity at (%.2f, %.2f)\n   Scale: %.2f", RandomX, RandomY, RandomScale);
             }
         }
 
