@@ -96,7 +96,12 @@ void HaruRendererBeginFrame(HaruRenderer *Renderer, HaruColor ClearColor) {
     if (!Renderer)
         return;
 
-    glViewport(0, 0, Renderer -> Width, Renderer -> Height);
+    int FramebufferWidth;
+    int FramebufferHeight;
+
+    glfwGetFramebufferSize((GLFWwindow *) Renderer -> Window -> Handle, &FramebufferWidth, &FramebufferHeight);
+
+    glViewport(0, 0, FramebufferWidth, FramebufferHeight);
 
     Renderer -> FrameActive = 1;
 
@@ -105,8 +110,8 @@ void HaruRendererBeginFrame(HaruRenderer *Renderer, HaruColor ClearColor) {
     Pass.action.colors[0].load_action = SG_LOADACTION_CLEAR;
     Pass.action.colors[0].clear_value = (sg_color) { ClearColor.R, ClearColor.G, ClearColor.B, ClearColor.A };
     
-    Pass.swapchain.width = Renderer -> Width;
-    Pass.swapchain.height = Renderer -> Height;
+    Pass.swapchain.width = FramebufferWidth;
+    Pass.swapchain.height = FramebufferHeight;
     Pass.swapchain.sample_count = 1;
     Pass.swapchain.color_format = SG_PIXELFORMAT_RGBA8;
     Pass.swapchain.gl.framebuffer = 0;
