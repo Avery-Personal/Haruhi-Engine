@@ -71,8 +71,7 @@ void HaruRendererDrawScene(HaruRenderer *Renderer, const HaruScene *Scene) {
         };
 
         sg_range Range = {.ptr = Parameters, .size = sizeof(Parameters)};
-        sg_apply_uniforms(0, &Range);
 
-        HaruRendererDrawMesh(Renderer, Entity -> Mesh, Entity -> Pipeline);
+        HaruRendererDrawMesh(Renderer, Entity -> Mesh, Entity -> Pipeline, &Range);
     }
 }
