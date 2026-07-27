@@ -60,18 +60,6 @@
         sg_pipeline *Pipeline;
     } HaruPipelineInternal;
 
-    typedef struct {
-        HaruMesh Mesh;
-        HaruPipeline Pipeline;
-        float PositionX, PositionY, PositionZ;
-        float Scale;
-    } HaruEntity;
-
-    typedef struct {
-        HaruEntity Entities[MAX_ENTITIES];
-        int EntityCount;
-    } HaruScene;
-
     struct HaruRenderer {
         HaruWindow *Window;
 
