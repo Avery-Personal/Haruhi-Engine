@@ -37,9 +37,9 @@ void InitializeSceneTest(HaruApplication *Application) {
     gMainScene = HaruSceneCreate();
 
     HaruVertex Vertices[] = {
-        {{-0.1f, -0.1f}, {1.0f, 0.0f, 0.0f, 1.0f}},
-        {{0.1f, -0.1f}, {0.0f, 1.0f, 0.0f, 1.0f}},
-        {{0.0f,  0.1f}, {0.0f, 0.0f, 1.0f, 1.0f}}
+        {{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f, 1.0f}},
+        {{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f, 1.0f}},
+        {{0.0f,  0.5f}, {0.0f, 0.0f, 1.0f, 1.0f}}
     };
 
     gTestMesh = HaruRendererCreateMesh(Application -> Renderer, Vertices, 3);
@@ -81,14 +81,14 @@ void HaruApplicationRun(HaruApplication *Application) {
         HaruTimeUpdate(&Application -> Time);
 
         if (HaruInputKeyPressed(&Application -> Platform, GLFW_KEY_J)) {
-            float RandomX = RandomFloat(-0.8f, 0.8f);
-            float RandomY = RandomFloat(-0.8f, 0.8f);
-            float RandomScale = RandomFloat(0.05f, 0.4f);
+            float RandomX = RandomFloat(-0.7f, 0.7f);
+            float RandomY = RandomFloat(-0.7f, 0.7f);
+            float RandomScale = RandomFloat(0.2f, 0.8f);
 
             HaruColor RandomColor = {
-                .R = RandomFloat(0.2f, 1.0f),
-                .G = RandomFloat(0.2f, 1.0f),
-                .B = RandomFloat(0.2f, 1.0f),
+                .R = RandomFloat(0.3f, 1.0f),
+                .G = RandomFloat(0.3f, 1.0f),
+                .B = RandomFloat(0.3f, 1.0f),
                 .A = 1.0f
             };
 
