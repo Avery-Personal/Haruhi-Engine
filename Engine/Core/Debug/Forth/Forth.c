@@ -1,9 +1,9 @@
-#include "Forth.h"
-
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
+
+#include "Forth.h"
 
 static void HaruForthDefaultPrint(HaruForthContext *Context, const char *Text) {
     (void) Context;
