@@ -30,7 +30,7 @@ HaruBoolean HaruSceneAddEntity(HaruScene *Scene, HaruEntity Entity) {
     return HARU_TRUE;
 }
 
-HaruBoolean HaruSceneSpawnEntity(HaruScene *Scene, HaruMesh Mesh, HaruPipeline Pipeline, float X, float Y, float Z, float Scale) {
+HaruBoolean HaruSceneSpawnEntity(HaruScene *Scene, HaruMesh Mesh, HaruPipeline Pipeline, float X, float Y, float Z, float Scale, HaruColor Color) {
     if (!Scene)
         return HARU_FALSE;
 
@@ -42,7 +42,8 @@ HaruBoolean HaruSceneSpawnEntity(HaruScene *Scene, HaruMesh Mesh, HaruPipeline P
         .PositionY = Y,
         .PositionZ = Z,
 
-        .Scale = Scale
+        .Scale = Scale,
+        .Color = Color
     };
 
     return HaruSceneAddEntity(Scene, Entity);
@@ -63,6 +64,14 @@ void HaruRendererDrawScene(HaruRenderer *Renderer, const HaruScene *Scene) {
 
     for (int i = 0; i < Scene -> EntityCount; i++) {
         const HaruEntity *Entity = &Scene -> Entities[i];
+
+        float Parameters[8] = {
+            Entity -> PositionX, Entity -> PositionY, Entity -> Scale, 0.0f,
+            Entity -> Color.R, Entity -> Color.G, Entity -> Color.B, Entity -> Color.A
+        };
+
+        sg_range Range = {.ptr = Parameters, .size = sizeof(Parameters)};
+        sg_apply_uniforms(0, &Range);
 
         HaruRendererDrawMesh(Renderer, Entity -> Mesh, Entity -> Pipeline);
     }
