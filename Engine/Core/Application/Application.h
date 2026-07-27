@@ -23,6 +23,7 @@
     #include "../../Platform/Runtime/Window/Window.h"
     #include "../../Platform/Runtime/Timer/Timer.h"
     #include "../../Systems/Rendering/Renderer.h"
+    #include "../../Systems/Rendering/Scene.h"
     #include "../Debug/Forth/Forth.h"
     #include "../System.h"
 
