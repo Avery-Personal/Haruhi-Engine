@@ -9,6 +9,7 @@
 #define SOKOL_GLUE_IMPL
 
 #include <stdlib.h>
+#include <stddef.h>
 #include <string.h>
 
 #include <OpenGL/gl3.h>
@@ -27,7 +28,7 @@ static const char *DefaultVSSource =
     "out vec4 FragmentColor;\n"
     "void main() {\n"
     "  vec2 TransformedPosition = (Position * uTransform.z) + uTransform.xy;\n"
-    "  gl_Position = vec4(TransformedPosition, 1.0, 1.0);\n"
+    "  gl_Position = vec4(TransformedPosition, 0.0, 1.0);\n"
     "  FragmentColor = Color * uColor;\n"
     "}\n";
 
@@ -44,7 +45,6 @@ HaruRenderer *HaruRendererCreate(HaruWindow *Window) {
         return NULL;
 
     HaruRenderer *Renderer = (HaruRenderer *) malloc(sizeof(HaruRenderer));
-
     if (!Renderer)
         return NULL;
 
@@ -54,7 +54,13 @@ HaruRenderer *HaruRendererCreate(HaruWindow *Window) {
     Renderer -> Width = Window -> FramebufferWidth;
     Renderer -> Height = Window -> FramebufferHeight;
 
+    glfwMakeContextCurrent((GLFWwindow *) Window -> Handle);
+
     sg_desc Description = {0};
+
+    Description.environment.defaults.color_format = SG_PIXELFORMAT_RGBA8;
+    Description.environment.defaults.depth_format = SG_PIXELFORMAT_DEPTH_STENCIL;
+    Description.environment.defaults.sample_count = 1;
 
     sg_setup(&Description);
 
@@ -101,6 +107,7 @@ void HaruRendererBeginFrame(HaruRenderer *Renderer, HaruColor ClearColor) {
     
     Pass.swapchain.width = Renderer -> Width;
     Pass.swapchain.height = Renderer -> Height;
+    Pass.swapchain.sample_count = 1;
     Pass.swapchain.color_format = SG_PIXELFORMAT_RGBA8;
     Pass.swapchain.gl.framebuffer = 0;
 
@@ -175,13 +182,24 @@ HaruPipeline HaruRendererCreatePipeline(HaruRenderer *Renderer, HaruPipelineDesc
 
     ShaderDescription.uniform_blocks[0].stage = SG_SHADERSTAGE_VERTEX;
     ShaderDescription.uniform_blocks[0].size = sizeof(float) * 8;
+
+    ShaderDescription.uniform_blocks[0].glsl_uniforms[0].glsl_name = "uTransform";
+    ShaderDescription.uniform_blocks[0].glsl_uniforms[0].type = SG_UNIFORMTYPE_FLOAT4;
+
+    ShaderDescription.uniform_blocks[0].glsl_uniforms[1].glsl_name = "uColor";
+    ShaderDescription.uniform_blocks[0].glsl_uniforms[1].type = SG_UNIFORMTYPE_FLOAT4;
     
     sg_shader Shader = sg_make_shader(&ShaderDescription);
     sg_pipeline_desc PipelineDescription = {0};
 
     PipelineDescription.shader = Shader;
     
+    PipelineDescription.layout.buffers[0].stride = sizeof(HaruVertex);
+    
+    PipelineDescription.layout.attrs[0].offset = offsetof(HaruVertex, Position);
     PipelineDescription.layout.attrs[0].format = SG_VERTEXFORMAT_FLOAT2;
+
+    PipelineDescription.layout.attrs[1].offset = offsetof(HaruVertex, Color);
     PipelineDescription.layout.attrs[1].format = SG_VERTEXFORMAT_FLOAT4;
     
     PipelineDescription.primitive_type = (Description.Topology == HARU_RENDERER_TOPOLOGY_LINES)  ? SG_PRIMITIVETYPE_LINES  : SG_PRIMITIVETYPE_TRIANGLES;
@@ -214,7 +232,7 @@ void HaruRendererDestroyPipeline(HaruRenderer *Renderer, HaruPipeline Pipeline) 
     }
 }
 
-void HaruRendererDrawMesh(HaruRenderer *Renderer, HaruMesh Mesh, HaruPipeline Pipeline) {
+void HaruRendererDrawMesh(HaruRenderer *Renderer, HaruMesh Mesh, HaruPipeline Pipeline, const sg_range *Uniforms) {
     if (!Renderer || !Renderer -> FrameActive)
         return;
 
@@ -237,6 +255,10 @@ void HaruRendererDrawMesh(HaruRenderer *Renderer, HaruMesh Mesh, HaruPipeline Pi
     Binding.vertex_buffers[0] = *InternalMesh -> VertexBuffer;
 
     sg_apply_bindings(&Binding);
+
+    if (Uniforms && Uniforms -> ptr) {
+        sg_apply_uniforms(0, Uniforms);
+    }
 
     sg_draw(0, InternalMesh -> VertexCount, 1);
 }
