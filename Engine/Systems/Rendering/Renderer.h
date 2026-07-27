@@ -91,6 +91,6 @@
     HaruPipeline HaruRendererCreatePipeline(HaruRenderer *Renderer, HaruPipelineDescription Description);
     void HaruRendererDestroyPipeline(HaruRenderer *Renderer, HaruPipeline Pipeline);
 
-    void HaruRendererDrawMesh(HaruRenderer *Renderer, HaruMesh Mesh, HaruPipeline Pipeline);
+    void HaruRendererDrawMesh(HaruRenderer *Renderer, HaruMesh Mesh, HaruPipeline Pipeline, const sg_range *Uniforms);
 
 #endif
