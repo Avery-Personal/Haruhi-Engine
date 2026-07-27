@@ -11,6 +11,8 @@
     #include "../../Third-Party/sokol_gfx.h"
     //#include "../../Third-Party/sokol_glue.h"
 
+    #define MAX_ENTITIES 1024
+
     typedef struct HaruWindow HaruWindow;
     typedef struct HaruRenderer HaruRenderer;
 
@@ -57,6 +59,18 @@
     typedef struct {
         sg_pipeline *Pipeline;
     } HaruPipelineInternal;
+
+    typedef struct {
+        HaruMesh Mesh;
+        HaruPipeline Pipeline;
+        float PositionX, PositionY, PositionZ;
+        float Scale;
+    } HaruEntity;
+
+    typedef struct {
+        HaruEntity Entities[MAX_ENTITIES];
+        int EntityCount;
+    } HaruScene;
 
     struct HaruRenderer {
         HaruWindow *Window;
