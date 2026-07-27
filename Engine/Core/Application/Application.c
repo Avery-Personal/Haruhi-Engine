@@ -21,12 +21,45 @@
 #include "../Debug/Forth/HaruEngineForth.h"
 #include "../Logging/Logging.h"
 
+static HaruScene gMainScene;
+static HaruMesh gTestMesh;
+static HaruPipeline gTestPipeline;
+static HaruBoolean gSceneInitialized = HARU_FALSE;
+
+void InitializeSceneTest(HaruApplication *Application) {
+    if (gSceneInitialized || !Application -> Renderer)
+        return;
+        
+    gMainScene = HaruSceneCreate();
+
+    HaruVertex Vertices[] = {
+        {{-0.1f, -0.1f}, {1.0f, 0.0f, 0.0f, 1.0f}},
+        {{0.1f, -0.1f}, {0.0f, 1.0f, 0.0f, 1.0f}},
+        {{0.0f,  0.1f}, {0.0f, 0.0f, 1.0f, 1.0f}}
+    };
+
+    gTestMesh = HaruRendererCreateMesh(Application -> Renderer, Vertices, 3);
+
+    HaruPipelineDescription PipelineDescription = {
+        .Topology = HARU_RENDERER_TOPOLOGY_TRIANGLES,
+        .EnableDepth = HARU_FALSE
+    };
+
+    gTestPipeline = HaruRendererCreatePipeline(Application -> Renderer, PipelineDescription);
+
+    HaruSceneSpawnEntity(&gMainScene, gTestMesh, gTestPipeline, 0.0f, 0.0f, 0.0f, 1.0f);
+
+    gSceneInitialized = HARU_TRUE;
+}
+
 void HaruApplicationRun(HaruApplication *Application) {
     HaruRenderer *Renderer = Application -> Renderer;
 
-    while (Application -> Running && Application -> Engine.Running) {
-        HaruTimeUpdate(&Application -> Time);
+    if (Renderer && !gSceneInitialized) {
+        InitializeSceneTest(Application);
+    }
 
+    while (Application -> Running && Application -> Engine.Running) {
         HaruInputBeginFrame(&Application -> Platform);
         HaruPlatformPollEvents(&Application -> Platform);
 
@@ -38,11 +71,25 @@ void HaruApplicationRun(HaruApplication *Application) {
             Application -> Running = 0;
             Application -> Engine.Running = 0;
         }
+        
+        HaruTimeUpdate(&Application -> Time);
+
+        if (HaruInputKeyPressed(&Application -> Platform, GLFW_KEY_J)) {
+            float RandomX = ((float) rand() / (float) RAND_MAX) * 1.6f - 0.8f;
+            float RandomY = ((float) rand() / (float) RAND_MAX) * 1.6f - 0.8f;
+
+            if (HaruSceneSpawnEntity(&gMainScene, gTestMesh, gTestPipeline, RandomX, RandomY, 0.0f, 1.0f)) {
+                HARU_LOG_INFO(&gLogger, "Spawned entity at (%.2f, %.2f)\n", RandomX, RandomY);
+            }
+        }
 
         if (Renderer) {
             HaruRendererResize(Renderer, Application -> MainWindow -> FramebufferWidth, Application -> MainWindow -> FramebufferHeight);
-            
-            HaruRendererBeginFrame(Renderer, (HaruColor){0.1f, 0.45f, 0.1f, 1.0f});
+
+            //InitializeSceneTest(Application);
+
+            HaruRendererBeginFrame(Renderer, (HaruColor){0.1f, 0.1f, 0.15f, 1.0f});
+            HaruRendererDrawScene(Renderer, &gMainScene);
             HaruRendererEndFrame(Renderer);
         }
     }
