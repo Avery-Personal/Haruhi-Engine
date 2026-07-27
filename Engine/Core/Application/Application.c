@@ -125,6 +125,8 @@ HaruWindow *HaruApplicationCreateWindow(HaruApplication *Application, const char
         Application -> MainWindow = Window;
 
         Application -> Renderer = HaruRendererCreate(Window);
+        
+        HaruInputBindWindow(Window);
     }
 
     return Window;
