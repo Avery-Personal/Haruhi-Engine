@@ -20,10 +20,15 @@ static const char *DefaultVSSource =
     "#version 410\n"
     "layout(location=0) in vec2 Position;\n"
     "layout(location=1) in vec4 Color;\n"
+    "uniform Params {\n"
+    "  vec4 uTransform;\n"
+    "  vec4 uColor;\n"
+    "};\n"
     "out vec4 FragmentColor;\n"
     "void main() {\n"
-    "  gl_Position = vec4(Position, 1.0, 1.0);\n"
-    "  FragmentColor = Color;\n"
+    "  vec2 TransformedPosition = (Position * uTransform.z) + uTransform.xy;\n"
+    "  gl_Position = vec4(TransformedPosition, 1.0, 1.0);\n"
+    "  FragmentColor = Color * uColor;\n"
     "}\n";
 
 static const char *DefaultFSSource =
@@ -167,6 +172,9 @@ HaruPipeline HaruRendererCreatePipeline(HaruRenderer *Renderer, HaruPipelineDesc
 
     ShaderDescription.vertex_func.source = DefaultVSSource;
     ShaderDescription.fragment_func.source = DefaultFSSource;
+
+    ShaderDescription.uniform_blocks[0].stage = SG_SHADERSTAGE_VERTEX;
+    ShaderDescription.uniform_blocks[0].size = sizeof(float) * 8;
     
     sg_shader Shader = sg_make_shader(&ShaderDescription);
     sg_pipeline_desc PipelineDescription = {0};
